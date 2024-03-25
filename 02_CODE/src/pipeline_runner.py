@@ -45,7 +45,7 @@ with warnings.catch_warnings(record=True) as w:
     warnings.simplefilter("always")  # Cause all warnings to always be triggered.
 
 
-def standalone_execution_sequential(cfg):
+def standalone_execution_sequential(cfg: HFEConfig):
     start_full = time()
     time_dict = {}
     for grayscale_filename in cfg.simulations.grayscale_filenames:

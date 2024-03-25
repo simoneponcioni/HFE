@@ -24,6 +24,7 @@ import sys
 import hfe_accurate.postprocessing as postprocessing
 import hfe_utils.print_optim_report as por
 from shutil import move
+import numpy as np
 
 os.environ["NUMEXPR_MAX_THREADS"] = "16"
 """
@@ -45,6 +46,28 @@ import utils_SA as utils
 
 
 def pipeline_hfe(cfg, folder_id, grayscale_filename):
+
+    n_sim = int(10)  # has to match sweep in config
+    # min = 3, 5, 1, 7
+    # max = 20, 50, 10, 50 did not work, reducing to 20, 40, 10, 40
+    n_elms_longitudinal = np.linspace(5, 15, n_sim, dtype=int)
+    n_elms_transverse_trab = np.linspace(5, 30, n_sim, dtype=int)
+    n_elms_transverse_cort = np.linspace(1, 8, n_sim, dtype=int)
+    n_radial = np.linspace(7, 40, n_sim, dtype=int)
+
+    # update meshing settings with sweep factor for sensitivity analysis
+    sweep = cfg.meshing_settings.sweep_factor
+    cfg.meshing_settings.n_elms_longitudinal = int(
+        n_elms_longitudinal[sweep - 1].item()
+    )
+    cfg.meshing_settings.n_elms_transverse_trab = int(
+        n_elms_transverse_trab[sweep - 1].item()
+    )
+    cfg.meshing_settings.n_elms_transverse_cort = int(
+        n_elms_transverse_cort[sweep - 1].item()
+    )
+    cfg.meshing_settings.n_elms_radial = int(n_radial[sweep - 1].item())
+
     # timing
     time_record = {}
     start_full = time()
@@ -104,6 +127,7 @@ def pipeline_hfe(cfg, folder_id, grayscale_filename):
         end_simulation = time()
     time_record["simulation"] = end_simulation - start_simulation
 
+    optim = {}
     optim = postprocessing.datfilereader_psl(cfg, grayscale_filename, optim, "FZ_MAX")
 
     # timing
@@ -113,11 +137,20 @@ def pipeline_hfe(cfg, folder_id, grayscale_filename):
 
     optim = por.compute_optim_report_variables(optim)
     bone = por.compute_bone_report_variables_no_psl(bone)
+
+    # only for sensitivity analysis
+    mesh_parameters_dict = {
+        "n_elms_longitudinal": cfg.meshing_settings.n_elms_longitudinal,
+        "n_elms_transverse_trab": cfg.meshing_settings.n_elms_transverse_trab,
+        "n_elms_transverse_cort": cfg.meshing_settings.n_elms_transverse_cort,
+        "n_elms_radial": cfg.meshing_settings.n_elms_radial,
+    }
     postprocessing.write_data_summary(
         cfg,
         optim,
         bone,
         grayscale_filename,
+        mesh_parameters_dict,
         DOFs=bone["degrees_of_freedom"],
         time_sim=time_record[grayscale_filename],
     )

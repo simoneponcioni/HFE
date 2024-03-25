@@ -229,7 +229,7 @@ def aim2fe_psl(cfg, sample):
         sitk_image.SetSpacing(bone["Spacing"])
 
         # append sample filename to config_mesh["img_settings"]
-        sample_n = str(sample)
+        sample_n = str(sample) + f"sweep_{cfg.meshing_settings.sweep_factor}"
         io_utils.hydra_update_cfg_key(cfg, "img_settings.img_basefilename", sample_n)
         cfg.img_settings.img_basefilename = sample_n
         mesh = HexMesh(
@@ -304,9 +304,11 @@ def aim2fe_psl(cfg, sample):
 
     # 5 Compute and store summary and performance variables
     # ---------------------------------------------------------------------------------
+    print("Computing summary variables")
     summary_variables = preprocessing.set_summary_variables(bone)
     # io_utils.log_summary(bone, cfg, filenames, summary_variables)
     bone = dict(list(bone.items()) + list(summary_variables.items()))
+    print("Summary variables computed")
 
     if cfg.mesher.meshing == "spline":
         imutils.plot_MSL_fabric_spline(cfg, abq_dictionary, sample)

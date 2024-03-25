@@ -18,7 +18,6 @@ def simulate_loadcase(cfg, sample: str, inputfile: str, umat: str, loadcase: str
     Returns:
         None
     """
-
     ABAQUS = cfg.solver.abaqus
     NPROCS = cfg.abaqus.abaqus_nprocs
     RAM = cfg.abaqus.abaqus_memory

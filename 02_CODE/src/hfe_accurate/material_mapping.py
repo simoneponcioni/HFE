@@ -903,7 +903,7 @@ def material_mapping_spline(
 
     print("Writing vtk maps of fabric for visualization:")
     utils.fab2vtk_fromdict(filenames["VTKname"], abq_dictionary)
-
+    print("Writing vtk maps of fabric for visualization: Done")
     # extend m with cort and trab
     m = np.append(m_cort, m_trab)
     mm = np.append(mm_cort, mm_trab, axis=0)

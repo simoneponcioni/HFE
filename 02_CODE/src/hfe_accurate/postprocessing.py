@@ -26,8 +26,6 @@ def datfilereader_psl(cfg, sample: str, optim: dict, loadcase: str) -> dict:
         + "/"
         + sample
         + "_"
-        + loadcase
-        + "_"
         + cfg.version.current_version[0:2]
         + ".dat"
     )

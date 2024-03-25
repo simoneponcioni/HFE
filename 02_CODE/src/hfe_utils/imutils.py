@@ -419,7 +419,7 @@ def compute_bvtv_d_seg(bone: dict, sample: str) -> dict:
     -------
     bone: dict
     """
-
+    print("\n ... compute BVTV and BVTVd")
     SEG = bone["SEG_array"]
     SEG[SEG > 0] = 1
     seg_voxels = np.sum(SEG[SEG > 0])

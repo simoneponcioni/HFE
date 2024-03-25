@@ -79,6 +79,7 @@ class MeshingSettings:
     write_mesh: bool
     trab_refinement: bool
     mesh_analysis: bool
+    sweep_factor: int
 
 
 @dataclass

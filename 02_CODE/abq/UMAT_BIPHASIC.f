@@ -1645,7 +1645,8 @@ C
       SUBROUTINE COMPUTE_CCCC(E0, V0, MM1, MM2, MM3,
      &                        LS, KS, MU0, BVTV, CCCC)
             IMPLICIT NONE
-            DOUBLE PRECISION, INTENT(IN) :: E0, V0, MM1, MM2, MM3, LS, KS, MU0, BVTV
+            DOUBLE PRECISION, INTENT(IN) :: E0, V0, MM1, MM2, MM3,
+     &                                      LS, KS, MU0, BVTV
             DOUBLE PRECISION, INTENT(OUT) :: CCCC(6,6)
 C
 C           COMPLIANCE TENSOR CCCC
@@ -1696,7 +1697,8 @@ C
      &                      PP, MM1, MM2, MM3, QQ, FF, NTENS)
       IMPLICIT NONE
       DOUBLE PRECISION, INTENT(IN) :: SIGD0P, SIGD0N, BVTV,
-     &                                PP, MM1, MM2, MM3, QQ, NTENS
+     &                                PP, MM1, MM2, MM3, QQ
+      INTEGER, INTENT(IN) :: NTENS 
       DOUBLE PRECISION, INTENT(OUT) :: FF(NTENS)
 C
 C     QUADRIC SECOND ORDER TENSOR FF

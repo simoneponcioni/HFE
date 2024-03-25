@@ -10,6 +10,7 @@ outputs/
 04_SIMULATIONS/
 05_OUTPUT/
 06_SUMMARIES/
+multirun/
 
 # abaqus extensions
 *.odb

@@ -46,7 +46,7 @@ loadcase:
   time_for_displacement: 1
   min_step_size: 0.0000000001
   max_step_size: 0.2
-  load_displacement: -0.01          # (mm)
+  load_displacement: -0.1          # (mm)
 
 abaqus:
   nlgeom: on                        # affects NLGEOM parameter in abaqus simulation (on/off)
@@ -55,7 +55,7 @@ abaqus:
   delete_odb: False                 # delete odb after retrieving data
   max_increments: 1000              # int number [1-1000]
   umat: 02_CODE/abq/UMAT_BIPHASIC.f
-  scratchdir: /home/simoneponcioni/.SCRATCH/
+  scratchdir: /home/sp20q110/.SCRATCH
 
 registration:
   registration: False               # True: if using registered data for longitudinal studies

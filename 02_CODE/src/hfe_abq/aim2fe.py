@@ -1,0 +1,394 @@
+"""
+Converts an AIM file to a HDF5 file.
+Adapted from the script from Denis Schenk, ISTB, University of Bern.
+
+Author: Jarunan Panyasantisuk, ETH Scientific IT Services.
+Date: 13 November 2018.
+
+Maintained by: Simone Poncioni, ARTORG Center for Biomedical Engineering Research, SITEM Insel, University of Bern
+Date: March 2024
+"""
+
+import gc
+import pickle
+import threading
+from pathlib import Path
+from time import sleep
+
+import hfe_accurate.preprocessing as preprocessing
+import hfe_utils.imutils as imutils
+import hfe_utils.io_utils as io_utils
+import matplotlib
+import matplotlib.image as mpimg
+import matplotlib.pyplot as plt
+import numpy as np
+import SimpleITK as sitk
+import yaml
+from mpl_toolkits.axes_grid1 import make_axes_locatable  # type: ignore
+from pyhexspline.spline_mesher import HexMesh  # type: ignore
+
+"""
+# flake8: noqa: W502
+from __future__ import print_function
+
+from importlib import reload
+
+import io_utils_SA as io_utils
+
+matplotlib.use("TkAgg")
+
+import preprocessing_SA as preprocessing
+import utils_SA as utils
+
+import logging
+
+import coloredlogs
+import material_mapping as material_mapping
+
+
+LOGGING_NAME = "MESHING"
+# configure the logger
+logger = logging.getLogger(LOGGING_NAME)
+logger.setLevel(logging.INFO)
+handler = logging.StreamHandler()
+handler.setLevel(logging.INFO)
+formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+handler.setFormatter(formatter)
+logger.addHandler(handler)
+coloredlogs.install(level=logging.INFO, logger=logger)
+
+
+config_mesh = io_utils.read_config_file("02_CODE/cfg/config_mesh.yaml")
+"""
+
+
+def _helper_store_bone_dict(bone: dict, basepath: Path, _mesh: str):
+    """
+    Helper function to store the bone dict as a pickle file
+    Can be removed after testing (POS, 02.08.2023)
+    """
+    BVTVscaled = bone["BVTVscaled"]
+    with open(basepath / f"{_mesh}_BVTVscaled.pkl", "wb") as a:
+        pickle.dump(BVTVscaled, a)
+
+    BMDscaled = bone["BMDscaled"]
+    with open(basepath / f"{_mesh}_BMDscaled.pkl", "wb") as b:
+        pickle.dump(BMDscaled, b)
+
+    CORTMASK_array = bone["CORTMASK_array"]
+    with open(basepath / f"{_mesh}_CORTMASK_array.pkl", "wb") as c:
+        pickle.dump(CORTMASK_array, c)
+
+    TRABMASK_array = bone["TRABMASK_array"]
+    with open(basepath / f"{_mesh}_TRABMASK_array.pkl", "wb") as d:
+        pickle.dump(TRABMASK_array, d)
+
+    SEG_array = bone["SEG_array"]
+    with open(basepath / f"{_mesh}_SEG_array.pkl", "wb") as e:
+        pickle.dump(SEG_array, e)
+
+    FEelSize = bone["FEelSize"]
+    with open(basepath / f"{_mesh}_FEelSize.pkl", "wb") as f:
+        pickle.dump(FEelSize, f)
+
+    Spacing = bone["Spacing"]
+    with open(basepath / f"{_mesh}_Spacing.pkl", "wb") as g:
+        pickle.dump(Spacing, g)
+
+    elems = bone["elms"]
+    with open(basepath / f"{_mesh}_elems.pkl", "wb") as h:
+        pickle.dump(elems, h)
+
+    nodes = bone["nodes"]
+    with open(basepath / f"{_mesh}_nodes.pkl", "wb") as i:
+        pickle.dump(nodes, i)
+
+    MSL_kernel_list_cort = bone["MSL_kernel_list_cort"]
+    with open(basepath / f"{_mesh}_MSL_kernel_list_cort.pkl", "wb") as k:
+        pickle.dump(MSL_kernel_list_cort, k)
+
+    MSL_kernel_list_trab = bone["MSL_kernel_list_trab"]
+    with open(basepath / f"{_mesh}_MSL_kernel_list_trab.pkl", "wb") as l:
+        pickle.dump(MSL_kernel_list_trab, l)
+
+    MESH = bone["MESH"]
+    with open(basepath / f"{_mesh}_MESH.pkl", "wb") as m:
+        pickle.dump(MESH, m)
+    return None
+
+
+def save_image_with_colorbar(data, output_path):
+    plt.figure()
+    ax = plt.gca()
+    im = ax.imshow(data, cmap="viridis")
+    plt.title(
+        f"{Path(output_path).parent.name} - {Path(output_path).stem}",
+        fontsize=20,
+        weight="bold",
+    )
+    divider = make_axes_locatable(ax)
+    cax = divider.append_axes("right", size="5%", pad=0.05)
+    plt.colorbar(im, cax=cax)
+    plt.tight_layout()
+    plt.savefig(output_path, dpi=300)
+    plt.clf()
+
+
+def aim2fe_psl(cfg, sample):
+    """
+    Wrapper that converts AIM image to Abaqus INP.
+
+    Args:
+        config (dict): dictionary of configuration parameters
+        sample (_type_): _description_
+
+    Raises:
+        TypeError: _description_
+
+    Returns:
+        _type_: _description_
+    """
+
+    # For Hosseini Dataset, Image parameters are read from original aim, not from processed BMD file, as there
+    # they were deleted by medtool pre-processing
+    origaim_separate_bool = cfg.image_processing.origaim_separate
+
+    filenames = io_utils.set_filenames(
+        cfg, sample, pipeline="accurate", origaim_separate=origaim_separate_bool
+    )
+
+    print(yaml.dump(filenames, default_flow_style=False))
+    io_utils.print_mem_usage()
+
+    # 2 Read AIM images and image parameters
+    # ---------------------------------------------------------------------------------
+    bone = {}
+    bone["sample"] = str(sample)
+
+    spacing, scaling, slope, intercept = imutils.read_img_param(filenames)
+    bone["Spacing"] = spacing
+    bone["Scaling"] = scaling
+    bone["Slope"] = slope
+    bone["Intercept"] = intercept
+
+    if cfg.image_processing.mask_separate is True:
+        image_list = ["BMD", "SEG", "CORTMASK", "TRABMASK"]
+        threads = []
+        lock = threading.Lock()
+        for item in image_list:
+            t = threading.Thread(
+                target=imutils.read_aim, args=(item, filenames, bone, lock)
+            )
+            threads.append(t)
+            sleep(0.1)  # to avoid overloading the print statements
+            t.start()
+        for t in threads:
+            t.join()
+    else:
+        image_list = ["BMD", "SEG"]
+        for _, item in enumerate(image_list):
+            bone = io_utils.read_aim(item, filenames, bone)
+        bone = imutils.read_aim_mask_combined("MASK", filenames, bone)
+
+    """
+    if config["registration"]:
+        bone = preprocessing.common_region(config, bone, filenames, sample)
+        image_list = ["BMD", "SEG", "CORTMASK", "TRABMASK", "COMMON", "COMMON_trans"]
+        for _, item in enumerate(image_list):
+            bone = preprocessing.adjust_image_size_REG(
+                item, bone, config, utils.CropType.crop
+            )
+    else:
+    """
+    image_list = ["BMD", "SEG", "CORTMASK", "TRABMASK"]
+    for _, item in enumerate(image_list):
+        bone = imutils.adjust_image_size(item, bone, cfg, imutils.CropType.crop)
+
+    # Save images with colorbar
+    imutils.save_images_with_colorbar(cfg, sample, bone)
+
+    # 3 Prepare material mapping
+    # ---------------------------------------------------------------------------------
+
+    IMTYPE = cfg.image_processing.imtype
+    io_utils.print_mem_usage()
+    BVTVscaled, BMDscaled, BVTVraw = preprocessing.calculate_bvtv(
+        bone["Scaling"],
+        bone["Slope"],
+        bone["Intercept"],
+        bone["BMD_array"],
+        bone["CORTMASK_array"],
+        bone["TRABMASK_array"],
+        cfg,
+        IMTYPE,
+    )
+
+    io_utils.print_mem_usage()
+    bone["BVTVscaled"] = BVTVscaled
+    bone["BMDscaled"] = BMDscaled
+    bone["BVTVraw"] = BVTVraw
+
+    del BVTVscaled, BMDscaled, BVTVraw
+    gc.collect()
+
+    io_utils.print_mem_usage()
+    """
+    if config["meshing"] == "full-block":
+        if config["registration"]:
+            bone = preprocessing.Generate_full_block_mesh_accurate_REG(
+                bone, config, filenames
+            )
+        else:
+            bone = preprocessing.PSL_generate_full_block_mesh_accurate(
+                bone, config, filenames
+            )
+    """
+    if cfg.mesher.meshing == "spline":
+        cort_mask_np = bone["CORTMASK_array"]
+        sitk_image = sitk.GetImageFromArray(cort_mask_np)
+        sitk_image = sitk.PermuteAxes(sitk_image, [2, 1, 0])
+        sitk_image = sitk.Flip(sitk_image, [False, True, False])
+        sitk_image.SetSpacing(bone["Spacing"])
+
+        # append sample filename to config_mesh["img_settings"]
+        sample_n = str(sample)
+        io_utils.hydra_update_cfg_key(cfg, "img_settings.img_basefilename", sample_n)
+        cfg.img_settings.img_basefilename = sample_n
+        mesh = HexMesh(
+            cfg.meshing_settings,
+            cfg.img_settings,
+            sitk_image=sitk_image,
+        )
+
+        (
+            nodes,
+            elms,
+            nb_nodes,
+            centroids_cort,
+            centroids_trab,
+            elm_vol_cort,
+            elm_vol_trab,
+            radius_roi_cort,
+            radius_roi_trab,
+            bnds_bot,
+            bnds_top,
+            reference_point_coord,
+        ) = mesh.mesher()
+
+        bone["nodes"] = nodes
+        bone["elms"] = elms
+        bone["degrees_of_freedom"] = len(nodes) * 6
+        bone["elms_centroids_cort"] = centroids_cort
+        bone["elms_centroids_trab"] = centroids_trab
+        bone["elms_vol_cort"] = elm_vol_cort
+        bone["elms_vol_trab"] = elm_vol_trab
+        bone["bnds_bot"] = bnds_bot
+        bone["bnds_top"] = bnds_top
+        bone["reference_point_coord"] = reference_point_coord
+
+        bone["elsets"] = []
+        CoarseFactor = bone["FEelSize"][0] / bone["Spacing"][0]
+        BVTVscaled_shape = bone["BVTVscaled"].shape
+        bone["MESH"] = np.ones(
+            ([int(dim) for dim in np.floor(np.array(BVTVscaled_shape) / CoarseFactor)])
+        )
+
+    """
+    bone = preprocessing.calculate_iso_fabric(bone, config)
+    io_utils.print_mem_usage()
+
+    # 4 Material mapping
+    # Compute MSL kernel list
+    if config["fabric_type"] == "local":
+        print("Computing local MSL kernel list")
+        if config["registration"]:
+            bone = preprocessing.compute_local_MSL_REG_numba(bone, config)
+        else:
+            if config["meshing"] == "full-block":
+                bone = preprocessing.compute_local_MSL_numba(bone, config)
+            elif config["meshing"] == "spline":
+                bone = preprocessing.compute_msl_spline(bone, config)
+            else:
+                raise ValueError("Meshing type not recognised")
+    elif config["fabric_type"] == "global":
+        print("Computing global MSL kernel list")
+        pass
+    else:
+        raise ValueError("Fabric type not recognised")
+
+    io_utils.print_mem_usage()
+
+    # ---------------------------------------------------------------------------------
+    # Ghost layer mode
+    if config["mode_ghost_layer"] == 1:
+        if config["isotropic_cortex"]:
+            bone = preprocessing.PSL_material_mapping_copy_layers_accurate_iso_cort(
+                bone, config, umat_parameters, filenames
+            )
+        else:
+            if config["BVTVd_as_BVTV"]:
+                bone = preprocessing.PSL_material_mapping_copy_layers_accurate(
+                    bone, config, umat_parameters, filenames
+                )
+            else:
+                if config["registration"]:
+                    bone = (
+                        preprocessing.PSL_material_mapping_copy_layers_accurate_SEG_REG(
+                            bone, config, umat_parameters, filenames
+                        )
+                    )
+                elif config["meshing"] == "full-block":
+                    basepath = Path(
+                        "/home/sp20q110/HFE-ACCURATE/99_TEMP/material_mapping_testing/bone_dictionary"
+                    )
+                    mesh_type = config["meshing"]
+                    _helper_store_bone_dict(bone, basepath, _mesh=mesh_type)
+                    bone = preprocessing.PSL_material_mapping_copy_layers_accurate_SEG(
+                        bone, config, umat_parameters, filenames
+                    )
+                elif config["meshing"] == "spline":
+                    inp_filename = filenames["INPname"]
+                    basepath = Path(inp_filename).parent
+                    mesh_type = config["meshing"]
+                    # TODO: reactivate if you want pickled files (POS, 28.02.2024)
+                    # _helper_store_bone_dict(bone, basepath, _mesh=mesh_type)
+                    (
+                        bone,
+                        abq_dictionary,
+                        abq_inp_path,
+                    ) = material_mapping.material_mapping_spline(
+                        bone,
+                        config,
+                        filenames,
+                    )
+                    bone["abq_inp_path"] = abq_inp_path
+                else:
+                    raise ValueError("Meshing type not recognised (ghost layer mode 1)")
+
+    elif config["mode_ghost_layer"] == 2:
+        bone = preprocessing.PSL_material_mapping_predefined_properties(
+            bone, config, umat_parameters, filenames
+        )
+    else:
+        raise TypeError("Ghost layer mode was not set correctly")
+    io_utils.print_mem_usage()
+
+
+    # 5 Compute and store summary and performance variables
+    # ---------------------------------------------------------------------------------
+    reload(preprocessing)
+    reload(io_utils)
+    summary_variables = preprocessing.set_summary_variables(bone)
+    io_utils.log_summary(bone, config, filenames, summary_variables)
+    bone = dict(list(bone.items()) + list(summary_variables.items()))
+
+    if config["meshing"] == "full-block":
+        preprocessing.plot_MSL_fabric_fast(config, bone, sample)
+    elif config["meshing"] == "spline":
+        preprocessing.plot_MSL_fabric_spline(config, abq_dictionary, sample)
+    """
+
+    io_utils.print_mem_usage()
+
+    abq_inp_path = None  #! remove when it is actually created
+    return bone, abq_inp_path

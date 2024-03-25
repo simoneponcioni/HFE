@@ -1,0 +1,10 @@
+*************************************************************
+** Boundary conditions
+*************************************************************
+*STATIC
+** start step size, time for displacement, min step size, max step size
+0.1, 1.0, 10e-10, 0.2
+*BOUNDARY, TYPE=DISPLACEMENT
+REF_NODE, 3, 3, 0.3
+REF_NODE, 1, 2, 0.0
+REF_NODE, 4, 6, 0.0

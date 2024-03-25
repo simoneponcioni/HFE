@@ -1,0 +1,17 @@
+*************************************************************
+** Boundary conditions hFE fast
+*************************************************************
+*STATIC
+** start step size, time for displacement, min step size, max step size
+**0.05, 4.8, 5e-05, 0.05
+*CLOAD
+**node number, direction, magnitude
+REF_NODE, 1, 0.0
+REF_NODE, 2, 0.0
+REF_NODE, 3, 0.0
+REF_NODE, 4, 0.0
+REF_NODE, 5, 1.0
+REF_NODE, 6, 0.0
+**
+** Hosseini loading rate: 5mm/min
+** --> 4.8sec for 0.4mm displ.

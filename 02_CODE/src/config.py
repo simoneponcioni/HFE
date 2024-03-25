@@ -36,6 +36,7 @@ class Filenames:
 class Version:
     verification_files: int
     current_version: str
+    site_bone: str
 
 
 @dataclass
@@ -93,12 +94,11 @@ class Mesher:
     air_elements: bool
 
 
-@dataclass
+@dataclass(frozen=True)
 class ImageProcessing:
     origaim_separate: bool
     mask_separate: bool
     imtype: str
-    fabric_type: str
     bvtv_scaling: int
     bvtv_slope: float
     bvtv_intercept: float
@@ -108,8 +108,9 @@ class ImageProcessing:
     BMC_conservation: bool
 
 
-@dataclass
+@dataclass(frozen=True)
 class Homogenization:
+    fabric_type: str
     roi_bvtv_size: int
     STL_tolerance: float
     ROI_kernel_size_cort: int
@@ -117,10 +118,9 @@ class Homogenization:
     ROI_BVTV_size_cort: float
     ROI_BVTV_size_trab: float
     isotropic_cortex: bool
-    site_bone: str
 
 
-@dataclass
+@dataclass(frozen=True)
 class Loadcase:
     full_nonlinear_loadcases: bool
     BC_mode: int
@@ -133,6 +133,14 @@ class Loadcase:
 
 
 @dataclass
+class Optimization:
+    fz_max_factor: float
+    fx_fy_max_factor: float
+    mx_my_max_factor: float
+    mz_max_factor: float
+
+
+@dataclass
 class Abaqus:
     nlgeom: str
     abaqus_nprocs: int
@@ -140,6 +148,7 @@ class Abaqus:
     delete_odb: bool
     max_increments: int
     umat: str
+    scratchdir: str
 
 
 @dataclass
@@ -168,6 +177,7 @@ class HFEConfig:
     image_processing: ImageProcessing
     homogenization: Homogenization
     loadcase: Loadcase
+    optimization: Optimization
     abaqus: Abaqus
     registration: Registration
     old_cfg: OldCfg

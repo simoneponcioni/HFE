@@ -32,7 +32,7 @@ C     POSTYIELD BEHAVIOR FLAG 5 (SIMPLE SOFTENING FOR USE IN
 C     MATERIAL SUPERPOSITION - DS, ISTB, 11/2018
 C
 C     ADDED NEW MATERIAL CONSTANTS AND MIXED PHASE BV/TV DENSITY FUNCTION
-C     - POS/PHZ, ARTORG, 03/2024
+C     - POS, PHZ, ARTORG, 03/2024
 C
 C====================================================================
 C
@@ -183,37 +183,18 @@ C
 C     VISCOPLASTIC DAMAGE UMAT VARIABLES
       INTEGER ITER,MAXITER,K1,K2,DENSFL,VISCFL,PYFL
       DOUBLE PRECISION MM,ETA,TOL,KONSTD,CRITD
-      DOUBLE PRECISION BVTV,BVTVC,BVTVT,PBVC,PBVT
+      DOUBLE PRECISION BVTV,BVTVC,BVTVT,PBVC,PBVT,PBV
       DOUBLE PRECISION MM1,MM2,MM3,SCA1,SCA2,SCA3,SCA4
-      DOUBLE PRECISION ALPHA_D,C0,C1,C2,C3,RHO_INF,RHO_SUP, F_I, F_S
-      DOUBLE PRECISION E0T,V0T,MU0T,EAAT,VA0T,MUA0T,KST,LST
-      DOUBLE PRECISION E0C,V0C,MU0C,EAAC,VA0C,MUA0C,KSC,LSC
-      DOUBLE PRECISION SIGD0PT,SIGD0NT,ZETA0T,TAUD0T,PPT,QQT
-      DOUBLE PRECISION SIGD0PC,SIGD0NC,ZETA0C,TAUD0C,PPC,QQC
-      DOUBLE PRECISION SIGDAPT,SIGDANT,ZETAA0T,TAUDA0T,S0,SA
-      DOUBLE PRECISION SIGDAPC,SIGDANC,ZETAA0C,TAUDA0C
-      DOUBLE PRECISION KSLOPET,KSLOPEC,KWIDTHC
+      DOUBLE PRECISION E0,V0,MU0,KS,LS
+      DOUBLE PRECISION SIGD0P,SIGD0N,ZETA0,TAUD0,PP,QQ
+      DOUBLE PRECISION SIGDAP,SIGDAN,ZETAA0,TAUDA0,S0,SA
+      DOUBLE PRECISION KSLOPE,KWIDTHC
       DOUBLE PRECISION KMAX,KWIDTH,RDY
       DOUBLE PRECISION KMIN,GMIN,ND,EXPS
       DOUBLE PRECISION SSSS(NTENS,NTENS)
-      DOUBLE PRECISION SSSST(NTENS,NTENS)
-      DOUBLE PRECISION SSSSC(NTENS,NTENS)
       DOUBLE PRECISION CCCC(NTENS,NTENS)
-      DOUBLE PRECISION CCCCT(NTENS,NTENS)
-      DOUBLE PRECISION CCCCC(NTENS,NTENS)
-      DOUBLE PRECISION FFFFT(NTENS,NTENS)
-      DOUBLE PRECISION FFFFC(NTENS,NTENS)
       DOUBLE PRECISION FFFF(NTENS,NTENS)
-      DOUBLE PRECISION FFFFTI(NTENS,NTENS)
-      DOUBLE PRECISION FFFFCI(NTENS,NTENS)
-      DOUBLE PRECISION FFFFTCI(NTENS,NTENS)
-      DOUBLE PRECISION FFT(3,3)
-      DOUBLE PRECISION FFTI(3,3)
-      DOUBLE PRECISION FFC(3,3)
-      DOUBLE PRECISION FFCI(3,3)
-      DOUBLE PRECISION FFTCI(3,3)
       DOUBLE PRECISION FF(NTENS)
-      DOUBLE PRECISION FFM(3, 3)
       DOUBLE PRECISION DDSY(NTENS,NTENS),DSY(NTENS)
       DOUBLE PRECISION ETOT1(NTENS),ETOT0(NTENS),SS0(NTENS)
       DOUBLE PRECISION KAPPA0,DKAPPAI,DKAPPA1,DDK1,KAPPA1
@@ -274,17 +255,8 @@ C
 C     VARIABLE INITIALISATION
 C     _______________________________________________________________
 C     TENSOR INITIALISATION
-      SSSST  = 0.0D0
-      SSSSC  = 0.0D0
       SSSS   = 0.0D0
-      CCCCT  = 0.0D0
-      CCCCC  = 0.0D0
       CCCC   = 0.0D0
-      FFFFT  = 0.0D0
-      FFFFTI = 0.0D0
-      FFFFC  = 0.0D0
-      FFFFCI = 0.0D0
-      FFFFTCI= 0.0D0
       FFFF   = 0.0D0
       DDSY   = 0.0D0
       DNPDS  = 0.0D0
@@ -299,18 +271,9 @@ C     TENSOR INITIALISATION
       DC     = 0.0D0
       VT     = 0.0D0
       DT     = 0.0D0
-      FFFFINTC= 0.0D0
-      FFFFINTT= 0.0D0
-      FFFFSUP= 0.0D0
 C
 C     VECTOR INITIALISATION
-      FFT    = 0.0D0
-      FFTI   = 0.0D0
-      FFC    = 0.0D0
-      FFCI   = 0.0D0
-      FFTCI  = 0.0D0
       FF     = 0.0D0
-      FFM    = 0.0D0
       ETOT1  = 0.0D0
       ETOT0  = 0.0D0
       SS0    = 0.0D0
@@ -362,8 +325,7 @@ C     SCALAR INITIALISATION
       DHDK    = 0.0D0
       NORMRR  = 0.0D0
       ABSY    = 1.0D0
-      KSLOPET = 1.0D0
-      KSLOPEC = 1.0D0
+      KSLOPE  = 1.0D0
       KMAX    = 1.0D0
       KWIDTH  = 1.0D0
       KONSTD  = 0.0D0
@@ -385,6 +347,7 @@ C     SCALAR INITIALISATION
       BVTVT   = 0.0D0
       PBVC    = 0.0D0
       PBVT    = 0.0D0
+      PBV     = 0.0D0
       MM1     = 0.0D0
       MM2     = 0.0D0
       MM3     = 0.0D0
@@ -396,15 +359,6 @@ C     SCALAR INITIALISATION
       J       = 0.0D0
       NROTC   = 0.0D0
       NROTT   = 0.0D0
-      ALPHA_D = 0.0D0
-      C0      = 0.0D0
-      C1      = 0.0D0
-      C2      = 0.0D0
-      C3      = 0.0D0
-      RHO_INF = 0.0D0
-      RHO_SUP = 0.0D0
-      F_I     = 0.0D0
-      F_S     = 0.0D0
 C
 C     PERSONALIZED LOADING
       EPS0    = 0.001D0
@@ -462,280 +416,68 @@ C     SCA2 strength parameters
       SCA2 = 1.0D0
       KMAX = 0.01D0
 C
-C     INTERPOLATION CONSTANTS FOR DENSITY FUNCTION
-      C0      = 2.635D0 
-      C1      = -14.062D0
-      C2      = 24.498D0
-      C3      = -12.265
-      RHO_INF = 0.45D0
-      RHO_SUP = 0.85D0
-C    
 C     FLAGS (See above YIELD/STRENGTH RATIO)
       VISCFL = 0
       PYFL   = 6
 C_______________________________________________________________
-C_____TRABECULAR PARAMETERS_____________________________________
+C_____MATERIAL CONSTANTS FOR BONE_______________________________
 C_______________________________________________________________
 C
+      IF (PBVT.GT.0.0D0.AND.PBVC.EQ.0.0D0) THEN
+            PBV  = PBVT
+            BVTV = BVTVT
+C           ELASTICITY PARAMETERS TRABECULAR BONE
+            E0  = 8632.0D0
+            V0  = 0.234D0
+            MU0 = 3115.0D0
+            KS  = 1.6D0
+            LS  = 1.0D0
+C           STRENGTH PARAMETERS TRABECULAR BONE
+            SIGD0P = 49.0D0
+            SIGD0N = 64.57D0
+            ZETA0  = 0.30D0
+            TAUD0  = 31.11D0
+            PP     = 1.50D0
+            QQ     = 0.71D0
+      ELSE IF (PBVC.GT.0.0D0.AND.PBVT.EQ.0.0D0) THEN
+            PBV  = PBVC
+            BVTV = BVTVC
+C           ELASTICITY PARAMETERS CORTICAL BONE
+            E0  = 16014.0D0
+            V0  = 0.34D0
+            MU0 = 5845.0D0
+            KS  = 1.0D0
+            LS  = 1.0D0
+C           STRENGTH PARAMETERS CORTICAL BONE
+            SIGD0P = 71.2D0
+            SIGD0N = 124.5D0
+            ZETA0  = 0.3D0 ! Range [0.3-0.49]
+            TAUD0  = 41.3D0
+            PP     = 1.0D0
+            QQ     = 1.0D0
+      END IF
+C
 C       POSTYIELD PARAMETERS
-      KSLOPET = 1000.D0
+      ! KSLOPE = 1000.D0
+      KSLOPE = 300.D0
       KWIDTH = 8.0D0
       KMIN   = 0.1D0
       GMIN   = -2.0D0
       EXPS   = 300.0D0
       ND     = 2.0D0
-C  
-C       ELASTICITY PARAMETERS (FABRGWTB PMUBC, PHZ, 2013) NEW VERSION 2024 TRABECULAR BONE
-      E0T  = 8632.0D0
-      V0T  = 0.234D0
-      MU0T = 3115.0D0
-      KST  = 1.6D0
-      LST  = 1.0D0
-C        
-C       STRENGTH PARAMETERS (FABRGWTB, PHZ, 2013) TRABECULAR BONE
-      SIGD0PT = 49.0D0
-      SIGD0NT = 64.57D0
-      ZETA0T  = 0.30D0
-      TAUD0T  = 31.11D0
-      PPT     = 1.50D0
-      QQT     = 0.71D0
-C_______________________________________________________________
-C_____CORTICAL PARAMETERS_______________________________________
-C_______________________________________________________________
-C
-C       POSTYIELD PARAMETERS
-      KSLOPEC = 300.D0
-C     THESE PARAMETERS WERE REPEATED TWICE, SHOULD WE DISTINGUISH THEM?
-      ! KWIDTH = 8.0D0
-      ! KMIN   = 0.1D0
-      ! GMIN   = -2.0D0
-      ! EXPS   = 300.0D0
-      ! ND     = 2.0D0
-C
-C       ELASTICITY PARAMETERS (FABRGWTB PMUBC, PHZ, 2013) NEW VERSION 2024 CORTICAL BONE
-      E0C  = 16014.0D0
-      V0C  = 0.34D0
-      MU0C = 5845.0D0
-      KSC  = 1.0D0
-      LSC  = 1.0D0
-C        
-C       STRENGTH PARAMETERS (FABRGWTB, PHZ, 2013) CORTICAL BONE
-      SIGD0PC = 71.2D0
-      SIGD0NC = 124.5D0
-      ZETA0C  = 0.3D0 ! Range [0.3-0.49]
-      TAUD0C  = 41.3D0
-      PPC     = 1.0D0
-      QQC     = 1.0D0
-C
-      IF (BVTVT.GT.0.0D0) THEN
-        BVTV = BVTVT
-      ELSE IF (BVTVC.GT.0.0D0) THEN
-        BVTV = BVTVC
-      ENDIF
-C
-C     ----------------------------------------------------------------------
-C     TRABECULAR SSSS, FFFF, FF
-C     POSTYIELD PARAMETERS TRAB: KS=1000/KW=8/KMIN=0.1/GMIN=-2/EXPS=300/ND=2
-C     KSLOPE CHANGED Denis 22.10.18 (300)
-C_______________________________________________________________
-C_____TRABECULAR ELEMENTS_______________________________________
-C_______________________________________________________________
-C
-C     STIFFNESS TENSOR SSSS
-      SSSST(1,1) = E0T*(1.0D0-V0T)/(1.0D0+V0T)/(1.0D0-2.0D0*V0T)*MM1**(2.0D0*LST)
-     &      * (TSFU(BVTV, KST, ALPHA_D, C0, C1, C2, C3, RHO_INF, RHO_SUP))
-      SSSST(2,2) = E0T*(1.0D0-V0T)/(1.0D0+V0T)/(1.0D0-2.0D0*V0T)*MM2**(2.0D0*LST)  
-     &      * (TSFU(BVTV, KST, ALPHA_D, C0, C1, C2, C3, RHO_INF, RHO_SUP))
-      SSSST(3,3) = E0T*(1.0D0-V0T)/(1.0D0+V0T)/(1.0D0-2.0D0*V0T)*MM3**(2.0D0*LST)  
-     &      * (TSFU(BVTV, KST, ALPHA_D, C0, C1, C2, C3, RHO_INF, RHO_SUP))
-      SSSST(4,4) = 2.0D0*MU0T*(MM1**LST)*(MM2**LST)                              
-     &      * (TSFU(BVTV, KST, ALPHA_D, C0, C1, C2, C3, RHO_INF, RHO_SUP))
-      SSSST(5,5) = 2.0D0*MU0T*(MM3**LST)*(MM1**LST)                              
-     &      * (TSFU(BVTV, KST, ALPHA_D, C0, C1, C2, C3, RHO_INF, RHO_SUP))
-      SSSST(6,6) = 2.0D0*MU0T*(MM2**LST)*(MM3**LST)                              
-     &      * (TSFU(BVTV, KST, ALPHA_D, C0, C1, C2, C3, RHO_INF, RHO_SUP))
-      SSSST(2,1) = E0T*V0T/(1.0D0+V0T)/(1.0D0-2.0D0*V0T)*(MM1**LST)*(MM2**LST)      
-     &      * (TSFU(BVTV, KST, ALPHA_D, C0, C1, C2, C3, RHO_INF, RHO_SUP))
-      SSSST(3,1) = E0T*V0T/(1.0D0+V0T)/(1.0D0-2.0D0*V0T)*(MM3**LST)*(MM1**LST)      
-     &      * (TSFU(BVTV, KST, ALPHA_D, C0, C1, C2, C3, RHO_INF, RHO_SUP))
-      SSSST(3,2) = E0T*V0T/(1.0D0+V0T)/(1.0D0-2.0D0*V0T)*(MM2**LST)*(MM3**LST)      
-     &      * (TSFU(BVTV, KST, ALPHA_D, C0, C1, C2, C3, RHO_INF, RHO_SUP))
-      SSSST(1,2) = SSSST(2,1)
-      SSSST(1,3) = SSSST(3,1)
-      SSSST(2,3) = SSSST(3,2)
-C
-C     COMPLIANCE TENSOR CCCC
-      CCCCT(1,1) = 1.0D0/(E0T*(MM1**(2.0D0*LST))        
-     &      * (TSFU(BVTV, KST, ALPHA_D, C0, C1, C2, C3, RHO_INF, RHO_SUP)))
-      CCCCT(2,2) = 1.0D0/(E0T*(MM2**(2.0D0*LST))        
-     &      * (TSFU(BVTV, KST, ALPHA_D, C0, C1, C2, C3, RHO_INF, RHO_SUP)))
-      CCCCT(3,3) = 1.0D0/(E0T*(MM3**(2.0D0*LST))        
-     &      * (TSFU(BVTV, KST, ALPHA_D, C0, C1, C2, C3, RHO_INF, RHO_SUP)))
-      CCCCT(4,4) = 0.5D0/(MU0T*(MM1**LST)*(MM2**LST)     
-     &      * (TSFU(BVTV, KST, ALPHA_D, C0, C1, C2, C3, RHO_INF, RHO_SUP)))
-      CCCCT(5,5) = 0.5D0/(MU0T*(MM3**LST)*(MM1**LST)     
-     &      * (TSFU(BVTV, KST, ALPHA_D, C0, C1, C2, C3, RHO_INF, RHO_SUP)))
-      CCCCT(6,6) = 0.5D0/(MU0T*(MM2**LST)*(MM3**LST)     
-     &      * (TSFU(BVTV, KST, ALPHA_D, C0, C1, C2, C3, RHO_INF, RHO_SUP)))
-      CCCCT(2,1) = -V0T/(E0T*(MM1**LST)*(MM2**LST)        
-     &      * (TSFU(BVTV, KST, ALPHA_D, C0, C1, C2, C3, RHO_INF, RHO_SUP)))
-      CCCCT(3,1) = -V0T/(E0T*(MM1**LST)*(MM3**LST)        
-     &      * (TSFU(BVTV, KST, ALPHA_D, C0, C1, C2, C3, RHO_INF, RHO_SUP)))
-      CCCCT(3,2) = -V0T/(E0T*(MM2**LST)*(MM3**LST)        
-     &      * (TSFU(BVTV, KST, ALPHA_D, C0, C1, C2, C3, RHO_INF, RHO_SUP)))
-      CCCCT(1,2) = CCCCT(2,1)
-      CCCCT(1,3) = CCCCT(3,1)
-      CCCCT(2,3) = CCCCT(3,2)
-C
-C     QUADRIC FOURTH ORDER TENSOR FFFF
-      S0        = (SIGD0PT+SIGD0NT)/2.0D0/SIGD0PT/SIGD0NT
-      FFFFT(1,1) = S0**2/((BVTV**PPT)*MM1**(2.0D0*QQT))**2
-      FFFFT(2,2) = S0**2/((BVTV**PPT)*MM2**(2.0D0*QQT))**2
-      FFFFT(3,3) = S0**2/((BVTV**PPT)*MM3**(2.0D0*QQT))**2
-      FFFFT(1,2) = -(ZETA0T*(MM1/MM2)**(2.0D0*QQT))*S0**2/((BVTV**PPT)*MM1**(2.0D0*QQT))**2
-      FFFFT(1,3) = -(ZETA0T*(MM1/MM3)**(2.0D0*QQT))*S0**2/((BVTV**PPT)*MM1**(2.0D0*QQT))**2
-      FFFFT(2,3) = -(ZETA0T*(MM2/MM3)**(2.0D0*QQT))*S0**2/((BVTV**PPT)*MM2**(2.0D0*QQT))**2
-      FFFFT(2,1) = FFFFT(1,2)
-      FFFFT(3,1) = FFFFT(1,3)
-      FFFFT(3,2) = FFFFT(2,3)
-      FFFFT(4,4) = 0.5D0/((TAUD0T*(BVTV**PPT)*(MM1*MM2)**QQT)**2)
-      FFFFT(5,5) = 0.5D0/((TAUD0T*(BVTV**PPT)*(MM1*MM3)**QQT)**2)
-      FFFFT(6,6) = 0.5D0/((TAUD0T*(BVTV**PPT)*(MM2*MM3)**QQT)**2)
-C
-C     QUADRIC SECOND ORDER TENSOR FF
-      FFT(1,1) = -(SIGD0PT-SIGD0NT)/2.0D0/SIGD0PT/SIGD0NT/((BVTV**PPT)*MM1**(2.0D0*QQT))
-      FFT(2,2) = -(SIGD0PT-SIGD0NT)/2.0D0/SIGD0PT/SIGD0NT/((BVTV**PPT)*MM2**(2.0D0*QQT))
-      FFT(3,3) = -(SIGD0PT-SIGD0NT)/2.0D0/SIGD0PT/SIGD0NT/((BVTV**PPT)*MM3**(2.0D0*QQT))
-C
-C_______________________________________________________________
-C_____CORTICAL ELEMENTS_________________________________________
-C_______________________________________________________________
-C
-C     STIFFNESS TENSOR SSSS
-      SSSSC(1,1) = E0C*(1.0D0-V0C)/(1.0D0+V0C)/(1.0D0-2.0D0*V0C)*MM1**(2.0D0*LSC)
-     &      * (TSFU(BVTV, KSC, ALPHA_D, C0, C1, C2, C3, RHO_INF, RHO_SUP))
-      SSSSC(2,2) = E0C*(1.0D0-V0C)/(1.0D0+V0C)/(1.0D0-2.0D0*V0C)*MM2**(2.0D0*LSC)  
-     &      * (TSFU(BVTV, KSC, ALPHA_D, C0, C1, C2, C3, RHO_INF, RHO_SUP))
-      SSSSC(3,3) = E0C*(1.0D0-V0C)/(1.0D0+V0C)/(1.0D0-2.0D0*V0C)*MM3**(2.0D0*LSC)  
-     &      * (TSFU(BVTV, KSC, ALPHA_D, C0, C1, C2, C3, RHO_INF, RHO_SUP))
-      SSSSC(4,4) = 2.0D0*MU0C*(MM1**LSC)*(MM2**LSC)                              
-     &      * (TSFU(BVTV, KSC, ALPHA_D, C0, C1, C2, C3, RHO_INF, RHO_SUP))
-      SSSSC(5,5) = 2.0D0*MU0C*(MM3**LSC)*(MM1**LSC)                              
-     &      * (TSFU(BVTV, KSC, ALPHA_D, C0, C1, C2, C3, RHO_INF, RHO_SUP))
-      SSSSC(6,6) = 2.0D0*MU0C*(MM2**LSC)*(MM3**LSC)                              
-     &      * (TSFU(BVTV, KSC, ALPHA_D, C0, C1, C2, C3, RHO_INF, RHO_SUP))
-      SSSSC(2,1) = E0C*V0C/(1.0D0+V0C)/(1.0D0-2.0D0*V0C)*(MM1**LSC)*(MM2**LSC)      
-     &      * (TSFU(BVTV, KSC, ALPHA_D, C0, C1, C2, C3, RHO_INF, RHO_SUP))
-      SSSSC(3,1) = E0C*V0C/(1.0D0+V0C)/(1.0D0-2.0D0*V0C)*(MM3**LSC)*(MM1**LSC)      
-     &      * (TSFU(BVTV, KSC, ALPHA_D, C0, C1, C2, C3, RHO_INF, RHO_SUP))
-      SSSSC(3,2) = E0C*V0C/(1.0D0+V0C)/(1.0D0-2.0D0*V0C)*(MM2**LSC)*(MM3**LSC)      
-     &      * (TSFU(BVTV, KSC, ALPHA_D, C0, C1, C2, C3, RHO_INF, RHO_SUP))
-      SSSSC(1,2) = SSSSC(2,1)
-      SSSSC(1,3) = SSSSC(3,1)
-      SSSSC(2,3) = SSSSC(3,2)
-C
-C     COMPLIANCE TENSOR CCCC
-      CCCCC(1,1) = 1.0D0/(E0C*(MM1**(2.0D0*LSC))        
-     &      * (TSFU(BVTV, KSC, ALPHA_D, C0, C1, C2, C3, RHO_INF, RHO_SUP)))
-      CCCCC(2,2) = 1.0D0/(E0C*(MM2**(2.0D0*LSC))        
-     &      * (TSFU(BVTV, KSC, ALPHA_D, C0, C1, C2, C3, RHO_INF, RHO_SUP)))
-      CCCCC(3,3) = 1.0D0/(E0C*(MM3**(2.0D0*LSC))        
-     &      * (TSFU(BVTV, KSC, ALPHA_D, C0, C1, C2, C3, RHO_INF, RHO_SUP)))
-      CCCCC(4,4) = 0.5D0/(MU0C*(MM1**LSC)*(MM2**LSC)     
-     &      * (TSFU(BVTV, KSC, ALPHA_D, C0, C1, C2, C3, RHO_INF, RHO_SUP)))
-      CCCCC(5,5) = 0.5D0/(MU0C*(MM3**LSC)*(MM1**LSC)     
-     &      * (TSFU(BVTV, KSC, ALPHA_D, C0, C1, C2, C3, RHO_INF, RHO_SUP)))
-      CCCCC(6,6) = 0.5D0/(MU0C*(MM2**LSC)*(MM3**LSC)     
-     &      * (TSFU(BVTV, KSC, ALPHA_D, C0, C1, C2, C3, RHO_INF, RHO_SUP)))
-      CCCCC(2,1) = -V0C/(E0C*(MM1**LSC)*(MM2**LSC)        
-     &      * (TSFU(BVTV, KSC, ALPHA_D, C0, C1, C2, C3, RHO_INF, RHO_SUP)))
-      CCCCC(3,1) = -V0C/(E0C*(MM1**LSC)*(MM3**LSC)        
-     &      * (TSFU(BVTV, KSC, ALPHA_D, C0, C1, C2, C3, RHO_INF, RHO_SUP)))
-      CCCCC(3,2) = -V0C/(E0C*(MM2**LSC)*(MM3**LSC)        
-     &      * (TSFU(BVTV, KSC, ALPHA_D, C0, C1, C2, C3, RHO_INF, RHO_SUP)))
-      CCCCC(1,2) = CCCCC(2,1)
-      CCCCC(1,3) = CCCCC(3,1)
-      CCCCC(2,3) = CCCCC(3,2)
-C
-C     QUADRIC FOURTH ORDER TENSOR FFFF
-      S0        = (SIGD0PC+SIGD0NC)/2.0D0/SIGD0PC/SIGD0NC
-      FFFFC(1,1) = S0**2/((BVTV**PPC)*MM1**(2.0D0*QQC))**2
-      FFFFC(2,2) = S0**2/((BVTV**PPC)*MM2**(2.0D0*QQC))**2
-      FFFFC(3,3) = S0**2/((BVTV**PPC)*MM3**(2.0D0*QQC))**2
-      FFFFC(1,2) = -(ZETA0C*(MM1/MM2)**(2.0D0*QQC))*S0**2/((BVTV**PPC)*MM1**(2.0D0*QQC))**2
-      FFFFC(1,3) = -(ZETA0C*(MM1/MM3)**(2.0D0*QQC))*S0**2/((BVTV**PPC)*MM1**(2.0D0*QQC))**2
-      FFFFC(2,3) = -(ZETA0C*(MM2/MM3)**(2.0D0*QQC))*S0**2/((BVTV**PPC)*MM2**(2.0D0*QQC))**2
-      FFFFC(2,1) = FFFFC(1,2)
-      FFFFC(3,1) = FFFFC(1,3)
-      FFFFC(3,2) = FFFFC(2,3)
-      FFFFC(4,4) = 0.5D0/((TAUD0C*(BVTV**PPC)*(MM1*MM2)**QQC)**2)
-      FFFFC(5,5) = 0.5D0/((TAUD0C*(BVTV**PPC)*(MM1*MM3)**QQC)**2)
-      FFFFC(6,6) = 0.5D0/((TAUD0C*(BVTV**PPC)*(MM2*MM3)**QQC)**2)
-C
-C     QUADRIC SECOND ORDER TENSOR FF
-      FFC(1,1) = -(SIGD0PC-SIGD0NC)/2.0D0/SIGD0PC/SIGD0NC/((BVTV**PPC)*MM1**(2.0D0*QQC))
-      FFC(2,2) = -(SIGD0PC-SIGD0NC)/2.0D0/SIGD0PC/SIGD0NC/((BVTV**PPC)*MM2**(2.0D0*QQC))
-      FFC(3,3) = -(SIGD0PC-SIGD0NC)/2.0D0/SIGD0PC/SIGD0NC/((BVTV**PPC)*MM3**(2.0D0*QQC))
-C
-      IF (BVTV.GT.0.0D0.AND.BVTV.LE.RHO_INF) THEN
-            IF (PBVT.GT.0.0D0.AND.PBVC.EQ.0.0D0) THEN
-                  SSSS = SSSST
-            ELSE IF (PBVC.GT.0.0D0.AND.PBVT.EQ.0.0D0) THEN
-                  SSSS = SSSSC
-            END IF
-
-      ELSE IF (BVTV.GT.RHO_INF.AND.BVTV.LE.RHO_SUP) THEN
-            F_I = ALPHA_D * (RHO_INF) ** KST
-            F_S = RHO_SUP
-            SSSS = (F_I * ((F_S - (TSFU(BVTV, KST, ALPHA_D, C0, C1, C2, C3, RHO_INF, RHO_SUP)))/(F_S - F_I)))
-     &      * SSSST + (F_S
-     &      * (((TSFU(BVTV, KSC, ALPHA_D, C0, C1, C2, C3, RHO_INF, RHO_SUP)) - F_I)
-     &      / (F_S - F_I))) * SSSSC
-      ELSE IF (BVTV.GT.RHO_SUP.AND.BVTV.LE.1.0D0) THEN
-            IF (PBVT.GT.0.0D0.AND.PBVC.EQ.0.0D0) THEN
-                  SSSS = SSSST
-            ELSE IF (PBVC.GT.0.0D0.AND.PBVT.EQ.0.0D0) THEN
-                  SSSS = SSSSC
-            END IF
-      ELSE IF (BVTV.GT.1.0D0) THEN
-C           FOR NOW, NO EXTRAPOLATION FOR BVTV > 1.0
-            PRINT *, 'Error: BVTV greater than 1.0 not supported yet.'
-            STOP 1
-      ENDIF
+C     _______________________________________________________________
+C     COMPUTATION OF STIFFNESS TENSOR SSSS, COMPLIANCE TENSOR CCCC, QUADRIC FOURTH ORDER TENSOR FFFF, QUADRIC SECOND ORDER TENSOR FF
+      CALL COMPUTE_SSSS(E0, V0, MM1, MM2, MM3, LS, KS, MU0, BVTV, SSSS)
+      CALL COMPUTE_CCCC(E0, V0, MM1, MM2, MM3, LS, KS, MU0, BVTV, CCCC)
+      CALL COMPUTE_FFFF(SIGD0P, SIGD0N, ZETA0, TAUD0, PP,
+     &                    QQ, MM1, MM2, MM3, BVTV, FFFF)
+      CALL COMPUTE_FF(SIGD0P, SIGD0N, BVTV, PP, MM1, MM2, MM3, QQ, FF, NTENS)
+      SSSS = SSSS*PBV
+      FFFF = FFFF*PBV
+      FF   = FF*PBV
 C
 C     _______________________________________________________________
 C     _______________________________________________________________
-C     _______________________________________________________________
-      IF (PBVT.GT.0.0D0.AND.PBVC.EQ.0.0D0) THEN
-C       DUMMY SUPERPOSITION FOR ONLY TRABECULAR BONE
-            SSSS = SSSST*PBVT
-            CALL MIGS(SSSS, 6, CCCC)
-            FFFF = FFFFT*PBVT
-            FFT  = FFT*PBVT
-            FF(1) = FFT(1,1)
-            FF(2) = FFT(2,2)
-            FF(3) = FFT(3,3)
-            FF(4) = 0.0D0
-            FF(5) = 0.0D0
-            FF(6) = 0.0D0
-C
-      ELSE IF (PBVC.GT.0.0D0.AND.PBVT.EQ.0.0D0) THEN
-C        DUMMY SUPERPOSITION FOR ONLY CORTICAL BONE
-            SSSS = SSSSC*PBVC
-            CALL MIGS(SSSS, 6, CCCC)
-            FFFF = FFFFC*PBVC
-            FFC  = FFC*PBVT
-            FF(1) = FFC(1,1)
-            FF(2) = FFC(2,2)
-            FF(3) = FFC(3,3)
-            FF(4) = 0.0D0
-            FF(5) = 0.0D0
-            FF(6) = 0.0D0
-      END IF
-C     _______________________________________________________________
-C     _______________________________________________________________
-C     _______________________________________________________________
-C
 C     _______________________________________________________________
       ETOT1 = STRAN+DSTRAN
       ETOT0 = STRAN
@@ -1346,11 +1088,11 @@ C     POS, PHZ, 03.2024
             TSFU = ALPHA_D * RHO**KS
       ELSE IF (RHO.GT.RHO_INF.AND.RHO.LE.RHO_SUP) THEN
             TSFU = C0 + C1 * RHO + C2 * RHO**2 + C3 * RHO**3
-      ELSE IF (RHO.GT.RHO_SUP.AND.RHO.LE.ONE) THEN
+      ELSE IF (RHO.GT.RHO_SUP) THEN
             TSFU = RHO
-      ELSE IF (RHO.GT.ONE) THEN
-            RHO = 1.0D0
-            TSFU = RHO
+      ! ELSE IF (RHO.GT.ONE) THEN
+      !       RHO = 1.0D0
+      !       TSFU = RHO
       ENDIF
       RETURN
       END
@@ -1869,3 +1611,87 @@ C
           PRINT *, AAA(6,1), AAA(6,2), AAA(6,3), AAA(6,4), AAA(6,5), AAA(6,6)
           PRINT *, ''
       end
+C
+      SUBROUTINE COMPUTE_SSSS(E0, V0, MM1, MM2, MM3,
+     &                          LS, KS, MU0, BVTV, SSSS)
+            IMPLICIT NONE
+            DOUBLE PRECISION, INTENT(IN) :: E0, V0, MM1, MM2, MM3, LS, KS, MU0, BVTV
+            DOUBLE PRECISION, INTENT(OUT) :: SSSS(6,6)
+            
+C           STIFFNESS TENSOR SSSS
+            SSSS(1,1) = E0*(1.0D0-V0)/(1.0D0+V0)/(1.0D0-2.0D0*V0)*MM1**(2.0D0*LS)*(BVTV**KS)
+            SSSS(2,2) = E0*(1.0D0-V0)/(1.0D0+V0)/(1.0D0-2.0D0*V0)*MM2**(2.0D0*LS)*(BVTV**KS)
+            SSSS(3,3) = E0*(1.0D0-V0)/(1.0D0+V0)/(1.0D0-2.0D0*V0)*MM3**(2.0D0*LS)*(BVTV**KS)
+            SSSS(4,4) = 2.0D0*MU0*(MM1**LS)*(MM2**LS)*(BVTV**KS)
+            SSSS(5,5) = 2.0D0*MU0*(MM3**LS)*(MM1**LS)*(BVTV**KS)
+            SSSS(6,6) = 2.0D0*MU0*(MM2**LS)*(MM3**LS)*(BVTV**KS)
+            SSSS(2,1) = E0*V0/(1.0D0+V0)/(1.0D0-2.0D0*V0)*(MM1**LS)*(MM2**LS)*(BVTV**KS)
+            SSSS(3,1) = E0*V0/(1.0D0+V0)/(1.0D0-2.0D0*V0)*(MM3**LS)*(MM1**LS)*(BVTV**KS)
+            SSSS(3,2) = E0*V0/(1.0D0+V0)/(1.0D0-2.0D0*V0)*(MM2**LS)*(MM3**LS)*(BVTV**KS)
+            SSSS(1,2) = SSSS(2,1)
+            SSSS(1,3) = SSSS(3,1)
+            SSSS(2,3) = SSSS(3,2)
+      END SUBROUTINE COMPUTE_SSSS
+C
+      SUBROUTINE COMPUTE_CCCC(E0, V0, MM1, MM2, MM3, LS, KS, MU0, BVTV, CCCC)
+            IMPLICIT NONE
+            DOUBLE PRECISION, INTENT(IN) :: E0, V0, MM1, MM2, MM3, LS, KS, MU0, BVTV
+            DOUBLE PRECISION, INTENT(OUT) :: CCCC(6,6)
+C
+C           COMPLIANCE TENSOR CCCC
+            CCCC(1,1) = 1.0D0/(E0*(MM1**(2.0D0*LS))*(BVTV**KS))
+            CCCC(2,2) = 1.0D0/(E0*(MM2**(2.0D0*LS))*(BVTV**KS))
+            CCCC(3,3) = 1.0D0/(E0*(MM3**(2.0D0*LS))*(BVTV**KS))
+            CCCC(4,4) = 0.5D0/(MU0*(MM1**LS)*(MM2**LS)*(BVTV**KS))
+            CCCC(5,5) = 0.5D0/(MU0*(MM3**LS)*(MM1**LS)*(BVTV**KS))
+            CCCC(6,6) = 0.5D0/(MU0*(MM2**LS)*(MM3**LS)*(BVTV**KS))
+            CCCC(2,1) = -V0/(E0*(MM1**LS)*(MM2**LS)*(BVTV**KS))
+            CCCC(3,1) = -V0/(E0*(MM1**LS)*(MM3**LS)*(BVTV**KS))
+            CCCC(3,2) = -V0/(E0*(MM2**LS)*(MM3**LS)*(BVTV**KS))
+            CCCC(1,2) = CCCC(2,1)
+            CCCC(1,3) = CCCC(3,1)
+            CCCC(2,3) = CCCC(3,2)
+      END SUBROUTINE COMPUTE_CCCC
+C
+      SUBROUTINE COMPUTE_FFFF(SIGD0P, SIGD0N, ZETA0, TAUD0, PP,
+     &                        QQ, MM1, MM2, MM3, BVTV, FFFF)
+            IMPLICIT NONE
+            DOUBLE PRECISION, INTENT(IN) :: SIGD0P, SIGD0N, ZETA0,
+     &                                      TAUD0, PP, QQ,
+     &                                      MM1,MM2, MM3, BVTV
+            DOUBLE PRECISION, INTENT(OUT) :: FFFF(6,6)
+            DOUBLE PRECISION S0
+C
+            S0 = 0.0D0
+C           QUADRIC FOURTH ORDER TENSOR FFFF
+            S0        = (SIGD0P+SIGD0N)/2.0D0/SIGD0P/SIGD0N
+            FFFF(1,1) = S0**2/((BVTV**PP)*MM1**(2.0D0*QQ))**2
+            FFFF(2,2) = S0**2/((BVTV**PP)*MM2**(2.0D0*QQ))**2
+            FFFF(3,3) = S0**2/((BVTV**PP)*MM3**(2.0D0*QQ))**2
+            FFFF(1,2) = -(ZETA0*(MM1/MM2)**(2.0D0*QQ))*S0**2/((BVTV**PP)*MM1**(2.0D0*QQ))**2
+            FFFF(1,3) = -(ZETA0*(MM1/MM3)**(2.0D0*QQ))*S0**2/((BVTV**PP)*MM1**(2.0D0*QQ))**2
+            FFFF(2,3) = -(ZETA0*(MM2/MM3)**(2.0D0*QQ))*S0**2/((BVTV**PP)*MM2**(2.0D0*QQ))**2
+            FFFF(2,1) = FFFF(1,2)
+            FFFF(3,1) = FFFF(1,3)
+            FFFF(3,2) = FFFF(2,3)
+            FFFF(4,4) = 0.5D0/((TAUD0*(BVTV**PP)*(MM1*MM2)**QQ)**2)
+            FFFF(5,5) = 0.5D0/((TAUD0*(BVTV**PP)*(MM1*MM3)**QQ)**2)
+            FFFF(6,6) = 0.5D0/((TAUD0*(BVTV**PP)*(MM2*MM3)**QQ)**2)
+      END SUBROUTINE COMPUTE_FFFF
+C
+      SUBROUTINE COMPUTE_FF(SIGD0P, SIGD0N, BVTV,
+     &                      PP, MM1, MM2, MM3, QQ, FF, NTENS)
+      IMPLICIT NONE
+      DOUBLE PRECISION, INTENT(IN) :: SIGD0P, SIGD0N, BVTV,
+     &                                PP, MM1, MM2, MM3, QQ, NTENS
+      DOUBLE PRECISION, INTENT(OUT) :: FF(NTENS)
+C
+C     QUADRIC SECOND ORDER TENSOR FF
+      FF(1) = -(SIGD0P-SIGD0N)/2.0D0/SIGD0P/SIGD0N/((BVTV**PP)*MM1**(2.0D0*QQ))
+      FF(2) = -(SIGD0P-SIGD0N)/2.0D0/SIGD0P/SIGD0N/((BVTV**PP)*MM2**(2.0D0*QQ))
+      FF(3) = -(SIGD0P-SIGD0N)/2.0D0/SIGD0P/SIGD0N/((BVTV**PP)*MM3**(2.0D0*QQ))
+      FF(4) = 0.0D0
+      FF(5) = 0.0D0
+      FF(6) = 0.0D0
+      END SUBROUTINE COMPUTE_FF
+C

@@ -11,17 +11,27 @@ from time import time
 from hfe_abq.hfe_accurate import pipeline_hfe
 import hydra
 from config import HFEConfig
-from hfe_utils import io_utils
 from hydra.core.config_store import ConfigStore
-
-logging.basicConfig(
-    filename="./04_OUTPUT/pipeline_runner.log",
-    level=logging.DEBUG,
-    format="%(asctime)s %(levelname)s %(name)s %(message)s",
-)
-logger = logging.getLogger(__name__)
+import coloredlogs
 
 # flake8: noqa: E501
+
+LOGGING_NAME = "HFE-ACCURATE"
+logger = logging.getLogger(LOGGING_NAME)
+logger.setLevel(logging.INFO)
+handler = logging.FileHandler("./pipeline_runner.log")
+handler.setLevel(logging.INFO)
+
+console_handler = logging.StreamHandler()
+console_handler.setLevel(logging.INFO)
+formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+handler.setFormatter(formatter)
+console_handler.setFormatter(formatter)
+
+logger.addHandler(handler)
+logger.addHandler(console_handler)
+coloredlogs.install(level=logging.INFO, logger=logger)
+
 cs = ConfigStore.instance()
 cs.store(name="hfe_config", node=HFEConfig)
 

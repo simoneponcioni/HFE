@@ -1,5 +1,6 @@
 paths:
-  workdir: /Users/msb/Documents/01_PHD/03_Methods/CLEAN-HFE-ACCURATE
+  # workdir: /Users/msb/Documents/01_PHD/03_Methods/CLEAN-HFE-ACCURATE
+  workdir: /home/simoneponcioni/Documents/01_PHD/03_Methods/HFE
   origaimdir: 00_ORIGAIM/
   aimdir:  01_DATA/
   feadir:  04_SIMULATIONS/
@@ -22,3 +23,5 @@ filenames:
 version:
   verification_files: 1
   current_version: 03_validation_smooth
+  site_bone: Tibia                          # Radius / Tibia
+

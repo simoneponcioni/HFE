@@ -9,6 +9,8 @@ import vtk  # type: ignore
 from mpl_toolkits.axes_grid1 import make_axes_locatable  # type: ignore
 from vtk.util.numpy_support import numpy_to_vtk, vtk_to_numpy  # type: ignore
 
+from hfe_utils.io_utils import ext
+
 # flake8: noqa: E501
 
 
@@ -21,6 +23,25 @@ def vtk2numpy(imvtk):
     imnp = imnp.reshape(dim[2], dim[1], dim[0])
     imnp = imnp.transpose(2, 1, 0)
     return imnp
+
+
+def numpy2vtk(imnp, spacing):
+    """turns a numpy array into a vtk image data"""
+    # vtk and numpy have different array conventions
+    imnp_flat = imnp.transpose(2, 1, 0).flatten()
+    if imnp.dtype == "int8":
+        arraytype = vtk.VTK_CHAR
+    elif imnp.dtype == "int16":
+        arraytype = vtk.VTK_SHORT
+    else:
+        arraytype = vtk.VTK_FLOAT
+    imvtk = numpy_to_vtk(num_array=imnp_flat, deep=True, array_type=arraytype)
+    image = vtk.vtkImageData()
+    image.SetDimensions(imnp.shape)
+    image.SetSpacing(spacing)
+    points = image.GetPointData()
+    points.SetScalars(imvtk)
+    return image
 
 
 def pad_image(image, iso_pad_size: int):
@@ -417,3 +438,152 @@ def compute_bvtv_d_seg(bone: dict, sample: str) -> dict:
     bone["mean_BVTVd_raw"] = mean_BVTVd_raw
 
     return bone
+
+
+def fab2vtk_fromdict(filename, abq_dict):
+    # write vtk files for each eigenvector
+    for i in [0, 1, 2]:
+        if i == 0:
+            vtkname = ext(filename, "_FABmin.vtk")
+        elif i == 1:
+            vtkname = ext(filename, "_FABmid.vtk")
+        elif i == 2:
+            vtkname = ext(filename, "_FABmax.vtk")
+
+        with open(vtkname, "w") as vtkFile:
+            vtkFile.write("# vtk DataFile Version 2.0\n")
+            vtkFile.write("Reconstructed Lagrangian Field Data\n")
+            vtkFile.write("ASCII\n")
+            vtkFile.write("DATASET UNSTRUCTURED_GRID\n")
+            vtkFile.write("\nPOINTS " + str(2 * len(abq_dict.keys())) + " float\n")
+            for elem in abq_dict.keys():
+                centroid = abq_dict[elem]["centroid"]
+                m = abq_dict[elem]["m"]
+                mm = abq_dict[elem]["mm"]
+
+                vtkFile.write(
+                    str(centroid[0] - m[i] * mm[0][i])
+                    + " "
+                    + str(centroid[1] - m[i] * mm[1][i])
+                    + " "
+                    + str(centroid[2] - m[i] * mm[2][i])
+                    + "\n"
+                )
+            for elem in abq_dict.keys():
+                centroid = abq_dict[elem]["centroid"]
+                m = abq_dict[elem]["m"]
+                mm = abq_dict[elem]["mm"]
+                vtkFile.write(
+                    str(centroid[0] + m[i] * mm[0][i])
+                    + " "
+                    + str(centroid[1] + m[i] * mm[1][0])  # ? was 0
+                    + " "
+                    + str(centroid[2] + m[i] * mm[2][i])
+                    + "\n"
+                )
+            vtkFile.write(
+                "\nCELLS "
+                + str(len(abq_dict.keys()))
+                + " "
+                + str(3 * len(abq_dict.keys()))
+                + "\n"
+            )
+            count = 0
+            for elem in abq_dict.keys():
+                vtkFile.write(
+                    "2 " + str(count) + " " + str(count + len(abq_dict.keys())) + "\n"
+                )
+                count += +1
+            vtkFile.write("\nCELL_TYPES " + str(len(abq_dict.keys())) + "\n")
+            for elem in abq_dict.keys():
+                vtkFile.write("3\n")
+
+            vtkFile.write("\nCELL_DATA " + str(len(abq_dict.keys())) + "\n")
+            vtkFile.write("scalars DOA_max float\n")
+            vtkFile.write("LOOKUP_TABLE default\n")
+
+            for elem in abq_dict.keys():
+                m = abq_dict[elem]["m"]
+                vtkFile.write(str(m[0] / m[2]) + "\n")
+
+            try:
+                vtkFile.write("scalars PHIc float\n")
+                vtkFile.write("LOOKUP_TABLE default\n")
+                for elem in abq_dict.keys():
+                    PHIc = abq_dict[elem]["PHIc"]
+                    vtkFile.write(str(PHIc) + "\n")
+
+                vtkFile.write("scalars PHIt float\n")
+                vtkFile.write("LOOKUP_TABLE default\n")
+                for elem in abq_dict.keys():
+                    PHIt = abq_dict[elem]["PHIt"]
+                    vtkFile.write(str(PHIt) + "\n")
+
+            except KeyError:
+                vtkFile.write("scalars PHI float\n")
+                vtkFile.write("LOOKUP_TABLE default\n")
+                for elem in abq_dict.keys():
+                    PHI = abq_dict[elem]["PHI"]
+                    vtkFile.write(str(PHI) + "\n")
+
+            print(" ... vtk file written: " + vtkname)
+    return None
+
+
+def quiver_3d_MSL(eval, evect, cogs, path):
+    cmap = "viridis"
+    c = (eval - eval.min()) / eval.ptp()
+    c = np.concatenate((c, np.repeat(c, 2)))
+    c = getattr(plt.cm, cmap)(c)
+
+    fig = plt.figure(figsize=(10, 10))
+    ax = fig.add_subplot(111, projection="3d")
+    q = ax.quiver(
+        cogs[:, 0],
+        cogs[:, 1],
+        cogs[:, 2],
+        evect[:, 0],
+        evect[:, 1],
+        evect[:, 2],
+        cmap=cmap,
+    )
+    fig.colorbar(q, shrink=0.5)
+    q.set_edgecolor(c)
+    q.set_facecolor(c)
+    plt.savefig(path, dpi=300)
+    plt.close(fig)
+
+
+def plot_MSL_fabric_spline(cfg, abq_dict: dict, sample):
+    n_elems = len(abq_dict.keys())
+    cogs_plot = np.zeros((n_elems, 3))
+    evect1 = np.zeros((n_elems, 3))
+    evect2 = np.zeros((n_elems, 3))
+    evect3 = np.zeros((n_elems, 3))
+    eval1 = np.zeros(n_elems)
+    eval2 = np.zeros(n_elems)
+    eval3 = np.zeros(n_elems)
+
+    elems = abq_dict.keys()
+    for i, elem in enumerate(elems):
+        cogs_plot[i] = [
+            abq_dict[elem]["centroid"][0],
+            abq_dict[elem]["centroid"][1],
+            abq_dict[elem]["centroid"][2],
+        ]
+        evect1[i] = abq_dict[elem]["mm"][0]
+        evect2[i] = abq_dict[elem]["mm"][1]
+        evect3[i] = abq_dict[elem]["mm"][2]
+        eval1[i] = abq_dict[elem]["m"][0]
+        eval2[i] = abq_dict[elem]["m"][1]
+        eval3[i] = abq_dict[elem]["m"][2]
+
+    savepath = (
+        Path(cfg.paths.feadir)
+        / cfg.simulations.folder_id[sample]
+        / f"{sample}_{cfg.version.current_version}"
+    )
+
+    quiver_3d_MSL(eval1, evect1, cogs_plot, str(savepath.resolve()) + "_MSL_1.png")
+    quiver_3d_MSL(eval2, evect2, cogs_plot, str(savepath.resolve()) + "_MSL_2.png")
+    quiver_3d_MSL(eval3, evect3, cogs_plot, str(savepath.resolve()) + "_MSL_3.png")

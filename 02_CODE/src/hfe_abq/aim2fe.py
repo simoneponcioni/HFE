@@ -15,6 +15,7 @@ import threading
 from pathlib import Path
 from time import sleep
 
+import hfe_accurate.material_mapping as material_mapping
 import hfe_accurate.preprocessing as preprocessing
 import hfe_utils.imutils as imutils
 import hfe_utils.io_utils as io_utils
@@ -190,16 +191,6 @@ def aim2fe_psl(cfg, sample):
             bone = io_utils.read_aim(item, filenames, bone)
         bone = imutils.read_aim_mask_combined("MASK", filenames, bone)
 
-    """
-    if config["registration"]:
-        bone = preprocessing.common_region(config, bone, filenames, sample)
-        image_list = ["BMD", "SEG", "CORTMASK", "TRABMASK", "COMMON", "COMMON_trans"]
-        for _, item in enumerate(image_list):
-            bone = preprocessing.adjust_image_size_REG(
-                item, bone, config, utils.CropType.crop
-            )
-    else:
-    """
     image_list = ["BMD", "SEG", "CORTMASK", "TRABMASK"]
     for _, item in enumerate(image_list):
         bone = imutils.adjust_image_size(item, bone, cfg, imutils.CropType.crop)
@@ -223,7 +214,6 @@ def aim2fe_psl(cfg, sample):
         IMTYPE,
     )
 
-    io_utils.print_mem_usage()
     bone["BVTVscaled"] = BVTVscaled
     bone["BMDscaled"] = BMDscaled
     bone["BVTVraw"] = BVTVraw
@@ -231,18 +221,6 @@ def aim2fe_psl(cfg, sample):
     del BVTVscaled, BMDscaled, BVTVraw
     gc.collect()
 
-    io_utils.print_mem_usage()
-    """
-    if config["meshing"] == "full-block":
-        if config["registration"]:
-            bone = preprocessing.Generate_full_block_mesh_accurate_REG(
-                bone, config, filenames
-            )
-        else:
-            bone = preprocessing.PSL_generate_full_block_mesh_accurate(
-                bone, config, filenames
-            )
-    """
     if cfg.mesher.meshing == "spline":
         cort_mask_np = bone["CORTMASK_array"]
         sitk_image = sitk.GetImageFromArray(cort_mask_np)
@@ -293,102 +271,45 @@ def aim2fe_psl(cfg, sample):
             ([int(dim) for dim in np.floor(np.array(BVTVscaled_shape) / CoarseFactor)])
         )
 
-    """
-    bone = preprocessing.calculate_iso_fabric(bone, config)
-    io_utils.print_mem_usage()
-
     # 4 Material mapping
+    # ---------------------------------------------------------------------------------
     # Compute MSL kernel list
-    if config["fabric_type"] == "local":
+    if cfg.homogenization.fabric_type == "local":
         print("Computing local MSL kernel list")
-        if config["registration"]:
-            bone = preprocessing.compute_local_MSL_REG_numba(bone, config)
-        else:
-            if config["meshing"] == "full-block":
-                bone = preprocessing.compute_local_MSL_numba(bone, config)
-            elif config["meshing"] == "spline":
-                bone = preprocessing.compute_msl_spline(bone, config)
-            else:
-                raise ValueError("Meshing type not recognised")
-    elif config["fabric_type"] == "global":
+        bone = preprocessing.compute_msl_spline(bone, cfg)
+    elif cfg.homogenization.fabric_type == "global":
         print("Computing global MSL kernel list")
         pass
     else:
         raise ValueError("Fabric type not recognised")
 
-    io_utils.print_mem_usage()
-
-    # ---------------------------------------------------------------------------------
-    # Ghost layer mode
-    if config["mode_ghost_layer"] == 1:
-        if config["isotropic_cortex"]:
-            bone = preprocessing.PSL_material_mapping_copy_layers_accurate_iso_cort(
-                bone, config, umat_parameters, filenames
-            )
-        else:
-            if config["BVTVd_as_BVTV"]:
-                bone = preprocessing.PSL_material_mapping_copy_layers_accurate(
-                    bone, config, umat_parameters, filenames
-                )
-            else:
-                if config["registration"]:
-                    bone = (
-                        preprocessing.PSL_material_mapping_copy_layers_accurate_SEG_REG(
-                            bone, config, umat_parameters, filenames
-                        )
-                    )
-                elif config["meshing"] == "full-block":
-                    basepath = Path(
-                        "/home/sp20q110/HFE-ACCURATE/99_TEMP/material_mapping_testing/bone_dictionary"
-                    )
-                    mesh_type = config["meshing"]
-                    _helper_store_bone_dict(bone, basepath, _mesh=mesh_type)
-                    bone = preprocessing.PSL_material_mapping_copy_layers_accurate_SEG(
-                        bone, config, umat_parameters, filenames
-                    )
-                elif config["meshing"] == "spline":
-                    inp_filename = filenames["INPname"]
-                    basepath = Path(inp_filename).parent
-                    mesh_type = config["meshing"]
-                    # TODO: reactivate if you want pickled files (POS, 28.02.2024)
-                    # _helper_store_bone_dict(bone, basepath, _mesh=mesh_type)
-                    (
-                        bone,
-                        abq_dictionary,
-                        abq_inp_path,
-                    ) = material_mapping.material_mapping_spline(
-                        bone,
-                        config,
-                        filenames,
-                    )
-                    bone["abq_inp_path"] = abq_inp_path
-                else:
-                    raise ValueError("Meshing type not recognised (ghost layer mode 1)")
-
-    elif config["mode_ghost_layer"] == 2:
-        bone = preprocessing.PSL_material_mapping_predefined_properties(
-            bone, config, umat_parameters, filenames
+    if cfg.mesher.meshing == "spline":
+        inp_filename = filenames["INPname"]
+        # TODO: reactivate if you want pickled files (POS, 28.02.2024)
+        # mesh_type = cfg.mesher.meshing
+        # basepath = Path(inp_filename).parent
+        # _helper_store_bone_dict(bone, basepath, _mesh=mesh_type)
+        (
+            bone,
+            abq_dictionary,
+            abq_inp_path,
+        ) = material_mapping.material_mapping_spline(
+            bone,
+            cfg,
+            filenames,
         )
+        bone["abq_inp_path"] = abq_inp_path
     else:
-        raise TypeError("Ghost layer mode was not set correctly")
-    io_utils.print_mem_usage()
-
+        raise ValueError("Meshing type not recognised (ghost layer mode 1)")
 
     # 5 Compute and store summary and performance variables
     # ---------------------------------------------------------------------------------
-    reload(preprocessing)
-    reload(io_utils)
     summary_variables = preprocessing.set_summary_variables(bone)
-    io_utils.log_summary(bone, config, filenames, summary_variables)
+    # io_utils.log_summary(bone, cfg, filenames, summary_variables)
     bone = dict(list(bone.items()) + list(summary_variables.items()))
 
-    if config["meshing"] == "full-block":
-        preprocessing.plot_MSL_fabric_fast(config, bone, sample)
-    elif config["meshing"] == "spline":
-        preprocessing.plot_MSL_fabric_spline(config, abq_dictionary, sample)
-    """
-
-    io_utils.print_mem_usage()
-
-    abq_inp_path = None  #! remove when it is actually created
+    if cfg.mesher.meshing == "spline":
+        imutils.plot_MSL_fabric_spline(cfg, abq_dictionary, sample)
+    else:
+        raise NotImplementedError("Meshing type not recognised")
     return bone, abq_inp_path

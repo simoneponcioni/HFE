@@ -14,10 +14,16 @@ import os
 from pathlib import Path
 from time import time
 
+import hfe_abq.create_loadcases as create_loadcases
 import hfe_abq.aim2fe as aim2fe
 import hfe_utils.imutils as imutils
 import yaml
 from hfe_utils.io_utils import print_mem_usage, write_timing_summary
+import hfe_abq.simulation as simulation
+import sys
+import hfe_accurate.postprocessing as postprocessing
+import hfe_utils.print_optim_report as por
+from shutil import move
 
 os.environ["NUMEXPR_MAX_THREADS"] = "16"
 """
@@ -68,23 +74,13 @@ def pipeline_hfe(cfg, folder_id, grayscale_filename):
     bone = {}
     bone, abq_inp_path = aim2fe.aim2fe_psl(cfg, grayscale_filename)
 
-    """
     if cfg.image_processing.BVTVd_comparison is True:
         bone = imutils.compute_bvtv_d_seg(bone, grayscale_filename)
 
-    if cfg.meshing.meshing == "spline":
+    if cfg.mesher.meshing == "spline":
         inputfile = str(abq_inp_path.resolve())
 
-    # creating 6 loadcases
-    reload(create_loadcases_SA)
-    create_loadcases_SA.update_bc_files(config)
-    create_loadcases_SA.create_canonical_loadcases(config, inputfile)
-
     # 3.2) FZ_MAX
-    optim = {}
-    reload(create_loadcases_SA)
-
-    # check for size of image to determine wether it's a radius or tibia, else use config["site_bone"]
     cogs_dict = bone["cogs"]
 
     DIMZ = 0.0
@@ -93,68 +89,44 @@ def pipeline_hfe(cfg, folder_id, grayscale_filename):
             if arr2[-1] > DIMZ:
                 DIMZ = arr2[-1]
 
-    if DIMZ <= 21.0:  # TODO: check this value
-        # assume double stack radius
-        create_loadcases_SA.create_loadcases_fm_max_no_psl_radius(
-            config, sample, "FZ_MAX"
-        )
-    elif DIMZ <= 40.0:  # TODO: check this value
-        # assume triple stack tibia
-        create_loadcases_SA.create_loadcases_fm_max_no_psl_tibia(
-            config, sample, "FZ_MAX"
-        )
-    else:
-        print(f"Image size {DIMZ} not recognized, using config['site_bone']")
-        if config["site_bone"].lower() == "radius":
-            create_loadcases_SA.create_loadcases_fm_max_no_psl_radius(
-                config, sample, "FZ_MAX"
-            )
-        elif config["site_bone"].lower() == "tibia":
-            create_loadcases_SA.create_loadcases_fm_max_no_psl_tibia(
-                config, sample, "FZ_MAX"
-            )
-        else:
-            raise ValueError(
-                "Site bone in config was not properly defined. Use keywords [Radius] or [Tibia]"
-            )
+    # create_loadcases.create_loadcase_fz_max(cfg, grayscale_filename, "FZ_MAX")
 
-    start_simulation = time.time()
-    if do_simulation:
-        try:
-            simulation.simulate_loadcases_psl(config, sample, inputfile, umat, "FZ_MAX")
-            end_simulation = time.time()
-        except Exception:
-            print("Simulation of FZ_MAX loadcase resulted in error")
-            print(sys.stderr)
-            end_simulation = time.time()
-            pass
+    start_simulation = time()
+    try:
+        simulation.simulate_loadcase(cfg, grayscale_filename, inputfile, umat, "")
+        end_simulation = time()
+    except Exception:
+        print("Simulation of FZ_MAX loadcase resulted in error")
+        print(sys.stderr)
+        end_simulation = time()
+        pass
     else:
-        end_simulation = time.time()
+        end_simulation = time()
     time_record["simulation"] = end_simulation - start_simulation
 
-    optim = post.datfilereader_psl(config, sample, optim, "FZ_MAX")
+    optim = postprocessing.datfilereader_psl(cfg, grayscale_filename, optim, "FZ_MAX")
 
     # timing
-    end_sample = time.time()
+    end_sample = time()
     optim["processing_time"] = end_sample - start_sample
-    time_record[sample] = end_sample - start_sample
+    time_record[grayscale_filename] = end_sample - start_sample
 
-    reload(por)
-    reload(utils)
-    optim = por.compute_optim_report_variables_no_psl(config, sample, optim, bone)
+    optim = por.compute_optim_report_variables(optim)
     bone = por.compute_bone_report_variables_no_psl(bone)
-    utils.write_data_summary_no_psl(
-        config,
+    postprocessing.write_data_summary(
+        cfg,
         optim,
         bone,
-        sample,
+        grayscale_filename,
         DOFs=bone["degrees_of_freedom"],
-        time_sim=time_record[sample],
+        time_sim=time_record[grayscale_filename],
     )
 
-    if config["delete_odb"]:
-        odbfilename = "{}_FZ_MAX_{}.odb".format(sample, current_version[0:2])
-        odbfile = os.path.join(feadir, folder, odbfilename)
+    if cfg.abaqus.delete_odb:
+        odbfilename = "{}_FZ_MAX_{}.odb".format(
+            grayscale_filename, current_version[0:2]
+        )
+        odbfile = os.path.join(feadir, folder_id, odbfilename)
         os.remove(odbfile)
 
     sampledir_parent = Path(sampledir).parent
@@ -163,7 +135,7 @@ def pipeline_hfe(cfg, folder_id, grayscale_filename):
         # move whole content of feadir to sampledir except subdirectories
         for file in os.listdir(sampledir_parent):
             if os.path.isfile(os.path.join(sampledir_parent, file)):
-                shutil.move(os.path.join(sampledir_parent, file), sampledir)
+                move(os.path.join(sampledir_parent, file), sampledir)
     except Exception:
         current_time = time.strftime("%Y%m%d-%H%M%S")
         child_dir_time_path = (
@@ -173,9 +145,8 @@ def pipeline_hfe(cfg, folder_id, grayscale_filename):
         print(f"File in this location already exists, moving to {child_dir_time_path}")
         for file in os.listdir(sampledir_parent):
             if os.path.isfile(os.path.join(sampledir_parent, file)):
-                shutil.move(os.path.join(sampledir_parent, file), child_dir_time_path)
+                move(os.path.join(sampledir_parent, file), child_dir_time_path)
 
-    """
     end_full = time()
     time_record["full"] = end_full - start_full
     summary_path = Path(

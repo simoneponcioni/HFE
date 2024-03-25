@@ -471,7 +471,8 @@ C     COMPUTATION OF STIFFNESS TENSOR SSSS, COMPLIANCE TENSOR CCCC, QUADRIC FOUR
       CALL COMPUTE_CCCC(E0, V0, MM1, MM2, MM3, LS, KS, MU0, BVTV, CCCC)
       CALL COMPUTE_FFFF(SIGD0P, SIGD0N, ZETA0, TAUD0, PP,
      &                    QQ, MM1, MM2, MM3, BVTV, FFFF)
-      CALL COMPUTE_FF(SIGD0P, SIGD0N, BVTV, PP, MM1, MM2, MM3, QQ, FF, NTENS)
+      CALL COMPUTE_FF(SIGD0P, SIGD0N, BVTV, PP, MM1, MM2, MM3,
+     &                    QQ, FF, NTENS)
       SSSS = SSSS*PBV
       FFFF = FFFF*PBV
       FF   = FF*PBV
@@ -1080,7 +1081,8 @@ C     _______________________________________________________________
 C
 C     TISSUE FUNCTION TSFU(RHO,KS,DELTA))
 C     POS, PHZ, 03.2024
-      DOUBLE PRECISION FUNCTION TSFU(RHO,KS,ALPHA_D,C0,C1,C2,C3,RHO_INF,RHO_SUP)
+      DOUBLE PRECISION FUNCTION TSFU(RHO,KS,ALPHA_D,C0,C1,C2,C3,
+     &                               RHO_INF,RHO_SUP)
       IMPLICIT NONE
       DOUBLE PRECISION RHO,KS,ALPHA_D,C0,C1,C2,C3,RHO_INF,RHO_SUP,ONE
       ONE = 1.0D0
@@ -1615,25 +1617,33 @@ C
       SUBROUTINE COMPUTE_SSSS(E0, V0, MM1, MM2, MM3,
      &                          LS, KS, MU0, BVTV, SSSS)
             IMPLICIT NONE
-            DOUBLE PRECISION, INTENT(IN) :: E0, V0, MM1, MM2, MM3, LS, KS, MU0, BVTV
+            DOUBLE PRECISION, INTENT(IN) :: E0, V0, MM1, MM2, MM3,
+     &                                      LS, KS, MU0, BVTV
             DOUBLE PRECISION, INTENT(OUT) :: SSSS(6,6)
             
 C           STIFFNESS TENSOR SSSS
-            SSSS(1,1) = E0*(1.0D0-V0)/(1.0D0+V0)/(1.0D0-2.0D0*V0)*MM1**(2.0D0*LS)*(BVTV**KS)
-            SSSS(2,2) = E0*(1.0D0-V0)/(1.0D0+V0)/(1.0D0-2.0D0*V0)*MM2**(2.0D0*LS)*(BVTV**KS)
-            SSSS(3,3) = E0*(1.0D0-V0)/(1.0D0+V0)/(1.0D0-2.0D0*V0)*MM3**(2.0D0*LS)*(BVTV**KS)
+            SSSS(1,1) = E0*(1.0D0-V0)/(1.0D0+V0)/(1.0D0-2.0D0*V0)
+     &                  *MM1**(2.0D0*LS)*(BVTV**KS)
+            SSSS(2,2) = E0*(1.0D0-V0)/(1.0D0+V0)/(1.0D0-2.0D0*V0)
+     &                  *MM2**(2.0D0*LS)*(BVTV**KS)
+            SSSS(3,3) = E0*(1.0D0-V0)/(1.0D0+V0)/(1.0D0-2.0D0*V0)
+     &                  *MM3**(2.0D0*LS)*(BVTV**KS)
             SSSS(4,4) = 2.0D0*MU0*(MM1**LS)*(MM2**LS)*(BVTV**KS)
             SSSS(5,5) = 2.0D0*MU0*(MM3**LS)*(MM1**LS)*(BVTV**KS)
             SSSS(6,6) = 2.0D0*MU0*(MM2**LS)*(MM3**LS)*(BVTV**KS)
-            SSSS(2,1) = E0*V0/(1.0D0+V0)/(1.0D0-2.0D0*V0)*(MM1**LS)*(MM2**LS)*(BVTV**KS)
-            SSSS(3,1) = E0*V0/(1.0D0+V0)/(1.0D0-2.0D0*V0)*(MM3**LS)*(MM1**LS)*(BVTV**KS)
-            SSSS(3,2) = E0*V0/(1.0D0+V0)/(1.0D0-2.0D0*V0)*(MM2**LS)*(MM3**LS)*(BVTV**KS)
+            SSSS(2,1) = E0*V0/(1.0D0+V0)/(1.0D0-2.0D0*V0)
+     &                  *(MM1**LS)*(MM2**LS)*(BVTV**KS)
+            SSSS(3,1) = E0*V0/(1.0D0+V0)/(1.0D0-2.0D0*V0)
+     &                  *(MM3**LS)*(MM1**LS)*(BVTV**KS)
+            SSSS(3,2) = E0*V0/(1.0D0+V0)/(1.0D0-2.0D0*V0)
+     &                  *(MM2**LS)*(MM3**LS)*(BVTV**KS)
             SSSS(1,2) = SSSS(2,1)
             SSSS(1,3) = SSSS(3,1)
             SSSS(2,3) = SSSS(3,2)
       END SUBROUTINE COMPUTE_SSSS
 C
-      SUBROUTINE COMPUTE_CCCC(E0, V0, MM1, MM2, MM3, LS, KS, MU0, BVTV, CCCC)
+      SUBROUTINE COMPUTE_CCCC(E0, V0, MM1, MM2, MM3,
+     &                        LS, KS, MU0, BVTV, CCCC)
             IMPLICIT NONE
             DOUBLE PRECISION, INTENT(IN) :: E0, V0, MM1, MM2, MM3, LS, KS, MU0, BVTV
             DOUBLE PRECISION, INTENT(OUT) :: CCCC(6,6)
@@ -1668,9 +1678,12 @@ C           QUADRIC FOURTH ORDER TENSOR FFFF
             FFFF(1,1) = S0**2/((BVTV**PP)*MM1**(2.0D0*QQ))**2
             FFFF(2,2) = S0**2/((BVTV**PP)*MM2**(2.0D0*QQ))**2
             FFFF(3,3) = S0**2/((BVTV**PP)*MM3**(2.0D0*QQ))**2
-            FFFF(1,2) = -(ZETA0*(MM1/MM2)**(2.0D0*QQ))*S0**2/((BVTV**PP)*MM1**(2.0D0*QQ))**2
-            FFFF(1,3) = -(ZETA0*(MM1/MM3)**(2.0D0*QQ))*S0**2/((BVTV**PP)*MM1**(2.0D0*QQ))**2
-            FFFF(2,3) = -(ZETA0*(MM2/MM3)**(2.0D0*QQ))*S0**2/((BVTV**PP)*MM2**(2.0D0*QQ))**2
+            FFFF(1,2) = -(ZETA0*(MM1/MM2)**(2.0D0*QQ))
+     &                  *S0**2/((BVTV**PP)*MM1**(2.0D0*QQ))**2
+            FFFF(1,3) = -(ZETA0*(MM1/MM3)**(2.0D0*QQ))
+     &                  *S0**2/((BVTV**PP)*MM1**(2.0D0*QQ))**2
+            FFFF(2,3) = -(ZETA0*(MM2/MM3)**(2.0D0*QQ))
+     &                  *S0**2/((BVTV**PP)*MM2**(2.0D0*QQ))**2
             FFFF(2,1) = FFFF(1,2)
             FFFF(3,1) = FFFF(1,3)
             FFFF(3,2) = FFFF(2,3)
@@ -1687,9 +1700,12 @@ C
       DOUBLE PRECISION, INTENT(OUT) :: FF(NTENS)
 C
 C     QUADRIC SECOND ORDER TENSOR FF
-      FF(1) = -(SIGD0P-SIGD0N)/2.0D0/SIGD0P/SIGD0N/((BVTV**PP)*MM1**(2.0D0*QQ))
-      FF(2) = -(SIGD0P-SIGD0N)/2.0D0/SIGD0P/SIGD0N/((BVTV**PP)*MM2**(2.0D0*QQ))
-      FF(3) = -(SIGD0P-SIGD0N)/2.0D0/SIGD0P/SIGD0N/((BVTV**PP)*MM3**(2.0D0*QQ))
+      FF(1) = -(SIGD0P-SIGD0N)/2.0D0/SIGD0P/SIGD0N/
+     &         ((BVTV**PP)*MM1**(2.0D0*QQ))
+      FF(2) = -(SIGD0P-SIGD0N)/2.0D0/SIGD0P/SIGD0N/
+     &         ((BVTV**PP)*MM2**(2.0D0*QQ))
+      FF(3) = -(SIGD0P-SIGD0N)/2.0D0/SIGD0P/SIGD0N/
+     &         ((BVTV**PP)*MM3**(2.0D0*QQ))
       FF(4) = 0.0D0
       FF(5) = 0.0D0
       FF(6) = 0.0D0

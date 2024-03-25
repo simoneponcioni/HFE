@@ -1,5 +1,5 @@
-from pathlib import Path
 from csv import writer
+from pathlib import Path
 
 
 def remove_empty_entries_list(listname: list) -> list:

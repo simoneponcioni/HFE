@@ -11,6 +11,17 @@ outputs/
 05_OUTPUT/
 06_SUMMARIES/
 
+# abaqus extensions
+*.odb
+*.cae
+*.dat
+*.com
+*.msg
+*.sta
+*.prt
+*.sim
+*.inp
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

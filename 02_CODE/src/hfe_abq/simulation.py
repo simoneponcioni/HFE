@@ -1,12 +1,10 @@
 import os
-from pathlib import Path
-import traceback
 import sys
+import traceback
+from pathlib import Path
 
 
-def simulate_loadcase(
-    cfg, sample: str, inputfile: str, umat: str, loadcase: str = None
-):
+def simulate_loadcase(cfg, sample: str, inputfile: str, umat: str, loadcase: str):
     """
     Run abaqus simulation from os subprocess.
 

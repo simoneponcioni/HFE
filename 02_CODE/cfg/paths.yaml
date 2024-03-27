@@ -1,7 +1,7 @@
 paths:
-  # workdir: /Users/msb/Documents/01_PHD/03_Methods/CLEAN-HFE-ACCURATE
+  workdir: /Users/msb/Documents/01_PHD/03_Methods/CLEAN-HFE-ACCURATE
   # workdir: /home/simoneponcioni/Documents/01_PHD/03_Methods/HFE
-  workdir: /home/sp20q110/HFE
+  # workdir: /home/sp20q110/HFE
   origaimdir: 00_ORIGAIM/
   aimdir:  01_DATA/
   feadir:  04_SIMULATIONS/

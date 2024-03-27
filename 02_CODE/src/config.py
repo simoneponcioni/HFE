@@ -119,6 +119,7 @@ class Homogenization:
     ROI_BVTV_size_cort: float
     ROI_BVTV_size_trab: float
     isotropic_cortex: bool
+    orthotropic_cortex: bool
 
 
 @dataclass(frozen=True)

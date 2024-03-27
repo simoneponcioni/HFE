@@ -73,15 +73,16 @@ def calculate_bvtv(
 
 
 @timeit
-def input_sanity_check(SEG_array, trabmask, spacing, tolerance, dimZ):
+def input_sanity_check(SEG_array, trabmask, cortmask, spacing, tolerance, dimZ):
     if not isinstance(SEG_array, vtk.vtkImageData):
         SEGim_vtk = numpy2vtk(SEG_array, spacing)
 
     trabmask = fmt_sanity_check(trabmask)
+    cortmask = fmt_sanity_check(cortmask)
     spacing = fmt_sanity_check(spacing)
     dimZ = fmt_sanity_check(dimZ)
 
-    return SEGim_vtk, trabmask, spacing, tolerance, dimZ
+    return SEGim_vtk, trabmask, cortmask, spacing, tolerance, dimZ
 
 
 def fmt_sanity_check(in_file):
@@ -453,7 +454,7 @@ def smooth_kernel(MSL: np.ndarray, ROI_kernel_size: int) -> np.ndarray:
 
 
 @timeit
-def msl_triangulation(SEG_array, trabmask, spacing, tolerance):
+def msl_triangulation(cfg, SEG_array, cortmask, trabmask, spacing, tolerance):
     """
     This function is used for evaluating MSL fabric tensors.
     Fabric tensors are returned in two sets:
@@ -464,10 +465,11 @@ def msl_triangulation(SEG_array, trabmask, spacing, tolerance):
 
     Parameters
     ----------
-    SEGim_vtk           image array of segmentation [X, Y, Z]
-    tolerance           tolerance value for z-dimension
-    trabmask            binary trabecular mask image [X, Y, Z]
+    SEG_array           image array of segmentation [X, Y, Z]
     cortmask            binary cortical mask image [X, Y, Z]
+    trabmask            binary trabecular mask image [X, Y, Z]
+    spacing             list of spacing in 3D [X, Y, Z]
+    tolerance           # TODO: add description of tolerance
 
     Returns
     -------
@@ -487,7 +489,14 @@ def msl_triangulation(SEG_array, trabmask, spacing, tolerance):
     - Adaptation of assign_MSL_triangulation function to account
         for the transformation (M. Indermaur, 2023)
     - Improved memory and CPU time performance (S. Poncioni, 2023)
+    - Cortical compartment as orthotropic material, uses cortical mask to calculate (S. Poncioni, 2024)
     """
+    # TODO: mask SEG_vtk with size of trabmask (we don't calculate everything also for cortex)
+    ORTHOTROPIC_CORTEX = cfg.homogenization.orthotropic_cortex
+    if ORTHOTROPIC_CORTEX is True:
+        # mask SEG_vtk with trabmask with boolean
+        SEG_array = np.where(trabmask, SEG_array, 0)
+
     # * 0/6 Input sanity check
     try:
         dimZ = (np.shape(SEG_array) * spacing)[2]
@@ -495,13 +504,11 @@ def msl_triangulation(SEG_array, trabmask, spacing, tolerance):
         spacing = spacing[0]  # assuming isotropic spacing
         dimZ = (np.shape(SEG_array) * spacing)[2]
 
-    SEG_vtk, trabmask, spacing, tolerance, dimZ = input_sanity_check(
-        SEG_array, trabmask, spacing, tolerance, dimZ
+    SEG_vtk, trabmask, cortmask, spacing, tolerance, dimZ = input_sanity_check(
+        SEG_array, trabmask, cortmask, spacing, dimZ
     )
 
-    # TODO: mask SEG_vtk with size of trabmask (we don't calculate everything also for cortex)
-
-    # * 1/6 STL file creation
+    # * 1/6 STL file creation for trabecular compartment
     surfnet_output = surface_nets(
         SEG_vtk,
         output_mesh_type="tri",
@@ -511,60 +518,65 @@ def msl_triangulation(SEG_array, trabmask, spacing, tolerance):
         smoothing_num_iterations=10,
     )
 
-    # * 2/6 Calculation of Number of cells
-    cog_temp = get_cell_centers(surfnet_output)
-    nfacet = surfnet_output.GetNumberOfCells()
-
     del SEG_vtk
     gc.collect()
 
-    # * 3/6 Computation COG
-    (
-        cog_points_trab,
-        indices_trab,
-        cog_points_cort,
-        indices_cort,
-    ) = assign_vtk2cell(
-        cog_temp,
-        spacing,
-        dimZ,
-        tolerance,
-        trabmask,
-    )
+    if ORTHOTROPIC_CORTEX is True:
+        raise NotImplementedError("Working on this")
+        # * Trabecular compartment
 
-    # * 4/6 Computation cell normals and dyadic products
-    PointNormalArray, vtkNormals = compute_cell_normals(surfnet_output)
+    else:
+        # * 2/6 Calculation of Number of cells
+        cog_temp = get_cell_centers(surfnet_output)
+        nfacet = surfnet_output.GetNumberOfCells()
 
-    dyadic_cort, dyadic_trab = compute_dyadic_product_einsum(
-        PointNormalArray, indices_cort, indices_trab
-    )
+        # * 3/6 Computation COG
+        (
+            cog_points_trab,
+            indices_trab,
+            cog_points_cort,
+            indices_cort,
+        ) = assign_vtk2cell(
+            cog_temp,
+            spacing,
+            dimZ,
+            tolerance,
+            trabmask,
+        )
 
-    del (
-        cog_temp,
-        surfnet_output,
-        PointNormalArray,
-    )
-    gc.collect()
+        # * 4/6 Computation cell normals and dyadic products
+        PointNormalArray, vtkNormals = compute_cell_normals(surfnet_output)
 
-    # * 5/6 Computation of the cell area
-    area_cort, area_trab = compute_cell_area(vtkNormals, indices_cort, indices_trab)
+        dyadic_cort, dyadic_trab = compute_dyadic_product_einsum(
+            PointNormalArray, indices_cort, indices_trab
+        )
 
-    # * 6/6 Computation of the area dyadic
-    areadyadic_cort, areadyadic_trab = get_area_dyadic(
-        area_cort, area_trab, dyadic_cort, dyadic_trab
-    )
+        del (
+            cog_temp,
+            surfnet_output,
+            PointNormalArray,
+        )
+        gc.collect()
 
-    nfacet_range = np.arange(nfacet)
+        # * 5/6 Computation of the cell area
+        area_cort, area_trab = compute_cell_area(vtkNormals, indices_cort, indices_trab)
 
-    return (
-        cog_points_cort,
-        cog_points_trab,
-        areadyadic_cort,
-        areadyadic_trab,
-        nfacet_range,
-        indices_cort,
-        indices_trab,
-    )
+        # * 6/6 Computation of the area dyadic
+        areadyadic_cort, areadyadic_trab = get_area_dyadic(
+            area_cort, area_trab, dyadic_cort, dyadic_trab
+        )
+
+        nfacet_range = np.arange(nfacet)
+
+        return (
+            cog_points_cort,
+            cog_points_trab,
+            areadyadic_cort,
+            areadyadic_trab,
+            nfacet_range,
+            indices_cort,
+            indices_trab,
+        )
 
 
 def compute_msl_spline(bone: dict, cfg):
@@ -586,6 +598,7 @@ def compute_msl_spline(bone: dict, cfg):
     spacing = bone["Spacing"]
     SEG_array = bone["SEG_array"]
     TRABMASK_array = bone["TRABMASK_array"]
+    CORTMASK_array = bone["CORTMASK_array"]
 
     (
         cog_points_cort,
@@ -596,10 +609,7 @@ def compute_msl_spline(bone: dict, cfg):
         indices_cort,
         indices_trab,
     ) = msl_triangulation(
-        SEG_array,
-        TRABMASK_array,
-        spacing,
-        STL_tolerance,
+        cfg, SEG_array, CORTMASK_array, TRABMASK_array, spacing, STL_tolerance
     )
 
     # ? maybe I won't need to copy these into the bone dict (POS, 10.07.2023)

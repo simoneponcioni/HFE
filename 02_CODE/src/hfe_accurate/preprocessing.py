@@ -79,7 +79,6 @@ def input_sanity_check(SEG_array, trabmask, spacing, tolerance, dimZ):
 
     trabmask = fmt_sanity_check(trabmask)
     spacing = fmt_sanity_check(spacing)
-    tolerance = fmt_sanity_check(tolerance)
     dimZ = fmt_sanity_check(dimZ)
 
     return SEGim_vtk, trabmask, spacing, tolerance, dimZ

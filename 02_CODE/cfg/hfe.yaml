@@ -9,7 +9,7 @@ hydra:
     mode: MULTIRUN
     sweeper:
         params:
-          meshing_settings.sweep_factor: range(1, 10)
+          meshing_settings.sweep_factor: range(1, 8)
 
 mesher:
   meshing: spline                   # or 'full-block'
@@ -20,7 +20,7 @@ image_processing:
   origaim_separate: False           # For Hosseini Dataset, Image parameters are read from original aim, not from processed BMD file, as there they were deleted by medtool pre-processing
   mask_separate: True               # Standard evaluation gives two separate mask file (CORTMASK and TRABMASK), False if one maskfile with two different labels
   imtype: NATIVE                    # NATIVE or BMD
-  bvtv_scaling:                     # 0: no scaling, 1: Scaling of BVTV 61um to BVTV 11.4um [Hosseini2017]
+  bvtv_scaling: 1                   # 0: no scaling, 1: Scaling of BVTV 61um to BVTV 11.4um [Hosseini2017]
   bvtv_slope: 0.963                 # bvtv intercept, added to each image voxel
   bvtv_intercept: 0.03814           # bvtv intercept, added to each image voxel
   BVTVd_comparison: True            # runs the comparison in imutils.compute_bvtv_d_seg()
@@ -42,10 +42,10 @@ loadcase:
   full_nonlinear_loadcases: False   # [True/False] compute non-linear loadcases [FX, FY, MX, MY, MZ]
   BC_mode: 0                        # 0: all DOF fixed / 2: two in plane fixed / 5: all DOF free
   control: displacement             # [force/displacement] describes the loading boundary conditions
-  start_step_size: 0.1
+  start_step_size: 0.2
   time_for_displacement: 1
   min_step_size: 0.0000000001
-  max_step_size: 0.2
+  max_step_size: 0.5
   load_displacement: -0.1          # (mm)
 
 abaqus:

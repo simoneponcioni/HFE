@@ -27,33 +27,20 @@ from shutil import move
 import numpy as np
 
 os.environ["NUMEXPR_MAX_THREADS"] = "16"
-"""
-import shutil
-import sys
-from importlib import reload
 
-import create_loadcases_SA
-import io_utils_SA as io_utils
-import numpy as np
-import optimization as optimization
-import postprocessing_SA as post
-import print_optim_report as por
-import simulation
-import utils_SA as utils
-"""
 
 # flake8: noqa: E402, W503
 
 
 def pipeline_hfe(cfg, folder_id, grayscale_filename):
 
-    n_sim = int(10)  # has to match sweep in config
+    n_sim = int(8)  #! has to match sweep in config
     # min = 3, 5, 1, 7
     # max = 20, 50, 10, 50 did not work, reducing to 20, 40, 10, 40
-    n_elms_longitudinal = np.linspace(5, 15, n_sim, dtype=int)
-    n_elms_transverse_trab = np.linspace(5, 30, n_sim, dtype=int)
-    n_elms_transverse_cort = np.linspace(1, 8, n_sim, dtype=int)
-    n_radial = np.linspace(7, 40, n_sim, dtype=int)
+    n_elms_longitudinal = np.linspace(1, 5, n_sim, dtype=int)
+    n_elms_transverse_trab = np.linspace(2, 5, n_sim, dtype=int)
+    n_elms_transverse_cort = np.linspace(1, 1, n_sim, dtype=int)
+    n_radial = np.linspace(3, 10, n_sim, dtype=int)
 
     # update meshing settings with sweep factor for sensitivity analysis
     sweep = cfg.meshing_settings.sweep_factor

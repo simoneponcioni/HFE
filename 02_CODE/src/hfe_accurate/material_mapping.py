@@ -227,7 +227,7 @@ def __material_mapping__(
         phi_s, rho_s = calculate_bvtv(seg_array, mask_array, spacing, VOI_mm, cog_s)
 
         if SEG_correction == True:
-            TOL_SPACING = 0.005
+            TOL_SPACING = 0.01
             if abs(spacing[0] - 0.061) <= TOL_SPACING:
                 # Correction curve from Varga et al. 2009 for XCTII
                 rho_s = rho_s * 0.651 + 0.056462

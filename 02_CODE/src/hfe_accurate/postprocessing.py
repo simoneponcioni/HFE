@@ -195,7 +195,7 @@ inc U1 U2 U3 UR1 UR2 UR3 RF1 RF2 RF3 RM1 RM2 RM3 CF1 CF2 CF3 CM1 CM2 CM3
 
 
 def write_data_summary(
-    cfg: dict,
+    cfg,
     optim: dict,
     bone: dict,
     sample: str,
@@ -288,7 +288,6 @@ def write_data_summary(
 
         field_names_dict = [
             sample,
-            sample,
             DOFs,
             time_sim,
             mesh_parameters_dict["n_elms_longitudinal"],
@@ -296,15 +295,11 @@ def write_data_summary(
             mesh_parameters_dict["n_elms_transverse_cort"],
             mesh_parameters_dict["n_elms_radial"],
             optim["max_force_FZ_MAX"],
-            optim["max_force_FZ_MAX"],
             optim["disp_at_max_force_FZ_MAX"],
-            optim["disp_at_max_force_FZ_MAX"],
-            optim["stiffness_FZ_MAX"],
             optim["stiffness_FZ_MAX"],
         ]
 
         field_names_titles = [
-            "Sample",
             "Sample",
             "DOFs",
             "simulation_time",
@@ -313,8 +308,6 @@ def write_data_summary(
             "n_elms_transverse_cort",
             "n_elms_radial",
             "max_force_FZ_MAX",
-            "max_force_FZ_MAX",
-            "disp_at_max_force_FZ_MAX",
             "disp_at_max_force_FZ_MAX",
             "stiffness_1D_FZ_MAX",
         ]

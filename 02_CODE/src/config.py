@@ -9,7 +9,6 @@ class Simulations:
 
 @dataclass
 class Paths:
-    workdir: str
     origaimdir: str
     aimdir: str
     feadir: str
@@ -43,6 +42,8 @@ class Version:
 class Socket:
     site: str
     abaqus: str
+    workdir: str
+    scratchdir: str
 
 
 @dataclass
@@ -150,7 +151,6 @@ class Abaqus:
     delete_odb: bool
     max_increments: int
     umat: str
-    scratchdir: str
 
 
 @dataclass

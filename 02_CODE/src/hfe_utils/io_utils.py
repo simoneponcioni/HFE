@@ -1,11 +1,11 @@
 import os
 from pathlib import Path
+from socket import gethostname
 from time import time
 
+import numpy as np
 import psutil
 from omegaconf import OmegaConf
-from socket import gethostname
-import numpy as np
 
 
 def ext(filename, new_ext):
@@ -25,7 +25,8 @@ def timeit(method):
         ts = time()
         result = method(*args, **kwargs)
         te = time() - ts
-        print(f"{method.__name__}:\t\t{te:.2f} (s)")
+        # modify '30' if the function name is longer
+        print(f"{method.__name__:<30}\t\t{te:.2f} (s)")
         print_mem_usage()
         return result
 

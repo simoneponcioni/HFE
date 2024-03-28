@@ -8,8 +8,9 @@ outputs/
 01_DATA/
 03_MESH/
 04_SIMULATIONS/
-05_OUTPUT/
-06_SUMMARIES/
+05_SUMMARIES/
+99_TEMP/
+
 multirun/
 
 # abaqus extensions

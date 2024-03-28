@@ -588,6 +588,26 @@ def cai_evalues():
     return [E1, E2, E3]
 
 
+def __compute_eval_evect_projection__(MSL_kernel_list_cort, elms, BVcortseg, _evect):
+    # Fabric projection for cortical bone
+    # vectoronplane requires inputs evect max, mid, min, so evect[2], evect[1], evect[0]
+    evals = np.zeros((len(elms), 3))
+    evects = np.zeros((len(elms), 3, 3))
+    # TODO: make sure that the order of the evects is correct
+    for i, idx in enumerate(elms.values()):
+        evects[i, 2] = _evect[idx][:, 0]
+        evects[i, 1] = _evect[idx][:, 1]
+        evects[i, 0] = _evect[idx][:, 2]
+
+        if np.isnan(np.sum(np.array(evects[i]))):
+            print("warning: nan in evect")
+            # return 3x3 identity matrix
+            _, evects[i] = compute_isoFAB()
+        evals[i] = cai_evalues()  # Cai et al, Acta Biomater. 2019
+
+    return evals, evects
+
+
 def __compute_eval_evect__(MSL_kernel_list, elms, BVseg, projection=True):
     """
     Computes Eigenvalues and Eigenvectors for a given element using MSL_kernel_list, which is a return value of
@@ -644,17 +664,6 @@ def __compute_eval_evect__(MSL_kernel_list, elms, BVseg, projection=True):
         evect = evect[:, _argsort]
         evalue = np.array([e.real for e in evalue])
         evect = np.array(evect)
-
-        if projection == True:
-            # Fabric projection for cortical bone
-            # vectoronplane requires inputs evect max, mid, min, so evect[2], evect[1], evect[0]
-            evect[:, 0], evect[:, 1], evect[:, 2] = vectoronplane(
-                evect[:, 2], evect[:, 1], evect[:, 0], np.array([0.0, 0.0, 1.0])
-            )
-            if np.isnan(np.sum(np.array(evect))):
-                # return 3x3 identity matrix
-                _, evect = compute_isoFAB()
-            evalue = cai_evalues()  # Cai et al, Acta Biomater. 2019
 
         _lim = float(2.5)
         if np.any(np.array(evalue) > _lim):
@@ -796,9 +805,14 @@ def material_mapping_spline(
     cog_real_cort_np = np.array(list(cog_real_cort.values()))
     cog_real_trab_np = np.array(list(cog_real_trab.values()))
 
-    closest_distances_cort, closest_phys_points_cort = getClosestPhysPoint(
-        cog_real_cort_np, MSL_centroids_mm
-    )
+    if cfg.homogenization.orthotropic_cortex is True:
+        closest_distances_cort, closest_phys_points_cort = getClosestPhysPoint(
+            cog_real_cort_np, bone["cort_projection_MSL_centroids_mm"]
+        )
+    else:
+        closest_distances_cort, closest_phys_points_cort = getClosestPhysPoint(
+            cog_real_cort_np, MSL_centroids_mm
+        )
 
     closest_distances_trab, closest_phys_points_trab = getClosestPhysPoint(
         cog_real_trab_np, MSL_centroids_mm
@@ -811,9 +825,18 @@ def material_mapping_spline(
     elms_trab = correspondences_trab
 
     if fabric_type == "local":
-        m_cort, mm_cort = __compute_eval_evect__(
-            MSL_kernel_list_cort, elms_cort, BVcortseg, projection=True
-        )
+        if cfg.homogenization.orthotropic_cortex is True:
+            m_cort, mm_cort = __compute_eval_evect_projection__(
+                MSL_kernel_list_cort,
+                elms_cort,
+                BVcortseg,
+                bone["cort_projection_evect"],
+            )
+        else:
+            m_cort, mm_cort = __compute_eval_evect__(
+                MSL_kernel_list_cort, elms_cort, BVcortseg, projection=True
+            )
+
         m_trab, mm_trab = __compute_eval_evect__(
             MSL_kernel_list_trab, elms_trab, BVtrabseg, projection=False
         )

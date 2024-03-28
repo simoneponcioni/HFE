@@ -5,11 +5,12 @@ defaults:
   - mesh
   - _self_
 
-hydra:
-    mode: MULTIRUN
-    sweeper:
-        params:
-          meshing_settings.sweep_factor: range(1, 10)
+# * Mesh sensitivity analysis settings (in conjunction with parameters in hfe_accurate.py)
+# hydra:
+#     mode: MULTIRUN
+#     sweeper:
+#         params:
+#           meshing_settings.sweep_factor: range(1, 10)
 
 mesher:
   meshing: spline                   # or 'full-block'
@@ -26,7 +27,7 @@ image_processing:
   BVTVd_comparison: True            # runs the comparison in imutils.compute_bvtv_d_seg()
   BVTVd_as_BVTV: False              # True = BVTVd as BVTV, False= SEG as BVTV
   SEG_correction: True              # if BVTVd_as_BVTV is False you can apply a seg correction
-  BMC_conservation: False           # [True/False] conservation of BMC
+  BMC_conservation: True           # [True/False] conservation of BMC
 
 homogenization:
   fabric_type: local                # 'local' or 'global'
@@ -56,7 +57,7 @@ abaqus:
   delete_odb: False                 # delete odb after retrieving data
   max_increments: 1000              # int number [1-1000]
   umat: 02_CODE/abq/UMAT_BIPHASIC.f
-  scratchdir: /home/sp20q110/.SCRATCH
+
 
 registration:
   registration: False               # True: if using registered data for longitudinal studies

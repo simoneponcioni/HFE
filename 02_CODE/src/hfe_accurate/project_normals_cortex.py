@@ -267,13 +267,13 @@ def clustered_point_normals(
     evect[:, 1] = np.cross(projected_vectors, average_vectors_flat_nonzero)  # mid
     evect[:, 2] = projected_vectors  # max
 
-    p = pv.Plotter()
-    p.add_mesh(surfnet_output, color="tan", show_edges=False)
-    p.add_arrows(moved_grid_points_flat_nonzero, evect[:, 0], mag=30, color="blue")
-    p.add_arrows(moved_grid_points_flat_nonzero, evect[:, 1], mag=30, color="green")
-    p.add_arrows(moved_grid_points_flat_nonzero, evect[:, 2], mag=30, color="red")
-    p.show_axes()
-    p.show()
+    # p = pv.Plotter()
+    # p.add_mesh(surfnet_output, color="tan", show_edges=False)
+    # p.add_arrows(moved_grid_points_flat_nonzero, evect[:, 0], mag=30, color="blue")
+    # p.add_arrows(moved_grid_points_flat_nonzero, evect[:, 1], mag=30, color="green")
+    # p.add_arrows(moved_grid_points_flat_nonzero, evect[:, 2], mag=30, color="red")
+    # p.show_axes()
+    # p.show()
 
     return (
         moved_grid_points_flat_nonzero,

@@ -40,8 +40,8 @@ def pipeline_hfe(cfg, folder_id, grayscale_filename):
     # max = 20, 50, 10, 50 did not work, reducing to 20, 40, 10, 40
     n_elms_longitudinal = np.linspace(5, 15, n_sim, dtype=int)
     n_elms_transverse_trab = np.linspace(5, 30, n_sim, dtype=int)
-    n_elms_transverse_cort = np.linspace(1, 8, n_sim, dtype=int)
-    n_radial = np.linspace(7, 40, n_sim, dtype=int)
+    n_elms_transverse_cort = np.linspace(2, 8, n_sim, dtype=int)
+    n_radial = np.linspace(10, 40, n_sim, dtype=int)
 
     # update meshing settings with sweep factor for sensitivity analysis
     sweep = cfg.meshing_settings.sweep_factor

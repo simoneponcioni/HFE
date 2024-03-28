@@ -6,10 +6,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 import SimpleITK as sitk
 import vtk  # type: ignore
+from hfe_utils.io_utils import ext
 from mpl_toolkits.axes_grid1 import make_axes_locatable  # type: ignore
 from vtk.util.numpy_support import numpy_to_vtk, vtk_to_numpy  # type: ignore
-
-from hfe_utils.io_utils import ext
 
 # flake8: noqa: E501
 
@@ -532,7 +531,10 @@ def fab2vtk_fromdict(filename, abq_dict):
 
 def quiver_3d_MSL(eval, evect, cogs, path):
     cmap = "viridis"
-    c = (eval - eval.min()) / eval.ptp()
+    if eval.ptp() != 0:
+        c = (eval - eval.min()) / eval.ptp()
+    else:
+        c = np.zeros_like(eval)  # or some other appropriate value
     c = np.concatenate((c, np.repeat(c, 2)))
     c = getattr(plt.cm, cmap)(c)
 
@@ -587,3 +589,4 @@ def plot_MSL_fabric_spline(cfg, abq_dict: dict, sample):
     quiver_3d_MSL(eval1, evect1, cogs_plot, str(savepath.resolve()) + "_MSL_1.png")
     quiver_3d_MSL(eval2, evect2, cogs_plot, str(savepath.resolve()) + "_MSL_2.png")
     quiver_3d_MSL(eval3, evect3, cogs_plot, str(savepath.resolve()) + "_MSL_3.png")
+    return None

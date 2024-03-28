@@ -244,11 +244,6 @@ def clustered_point_normals(
         average_vectors_flat, grid_points_flat, surfnet_output
     )
 
-    projected_vectors = __plane_projection__(
-        average_vectors_flat, vertical_vector=[0, 0, 1]
-    )
-
-    # plot projected vectors
     # Since we have a grid, some vectors will be [0, 0, 0], hence removing the same indices from the points
     moved_grid_points_flat_nonzero = moved_grid_points_flat[
         ~np.all(average_vectors_flat == 0, axis=1)
@@ -262,14 +257,25 @@ def clustered_point_normals(
         ~np.all(average_vectors_flat == 0, axis=1)
     ]
 
+    # plot projected vectors
+    projected_vectors = __plane_projection__(
+        average_vectors_flat_nonzero, vertical_vector=[0, 0, 1]
+    )
+
     evect = np.zeros((len(moved_grid_points_flat_nonzero), 3, 3))
-    evect[:, 0] = projected_vectors
-    evect[:, 1] = average_vectors_flat_nonzero
-    evect[:, 2] = np.cross(projected_vectors, average_vectors_flat_nonzero)
+    evect[:, 0] = average_vectors_flat_nonzero  # min
+    evect[:, 1] = np.cross(projected_vectors, average_vectors_flat_nonzero)  # mid
+    evect[:, 2] = projected_vectors  # max
+
+    p = pv.Plotter()
+    p.add_mesh(surfnet_output, color="tan", show_edges=False)
+    p.add_arrows(moved_grid_points_flat_nonzero, evect[:, 0], mag=30, color="blue")
+    p.add_arrows(moved_grid_points_flat_nonzero, evect[:, 1], mag=30, color="green")
+    p.add_arrows(moved_grid_points_flat_nonzero, evect[:, 2], mag=30, color="red")
+    p.show_axes()
+    p.show()
 
     return (
         moved_grid_points_flat_nonzero,
-        average_vectors_flat_nonzero,
-        MSL_centroids_mm_nonzero,
         evect,
     )

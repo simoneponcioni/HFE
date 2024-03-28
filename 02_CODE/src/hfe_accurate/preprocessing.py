@@ -571,13 +571,10 @@ def compute_msl_spline(bone: dict, cfg):
         MSL_kernel_list_cort = None
         # Calculate projected eigenvector from cortical mask
         (
-            moved_grid_points_flat_nonzero,
-            average_vectors_flat_nonzero,
-            MSL_centroids_mm,
+            evect_origin,
             evect,
         ) = clustered_point_normals(cfg, CORTMASK_array, TRABMASK_array, spacing)
-        bone["cort_projection_MSL_centroids_mm"] = MSL_centroids_mm
-        bone["cort_projection_average_vectors_flat"] = average_vectors_flat_nonzero
+        bone["evect_origin"] = evect_origin
         bone["cort_projection_evect"] = evect
     else:
         MSL_values_cort = map_isosurface(

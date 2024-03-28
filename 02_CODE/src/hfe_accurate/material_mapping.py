@@ -590,14 +590,13 @@ def cai_evalues():
 
 def __compute_eval_evect_projection__(MSL_kernel_list_cort, elms, BVcortseg, _evect):
     # Fabric projection for cortical bone
-    # vectoronplane requires inputs evect max, mid, min, so evect[2], evect[1], evect[0]
     evals = np.zeros((len(elms), 3))
     evects = np.zeros((len(elms), 3, 3))
     # TODO: make sure that the order of the evects is correct
     for i, idx in enumerate(elms.values()):
-        evects[i, 2] = _evect[idx][:, 0]
-        evects[i, 1] = _evect[idx][:, 1]
-        evects[i, 0] = _evect[idx][:, 2]
+        evects[i, 0] = _evect[idx][:, 0]  # min
+        evects[i, 1] = _evect[idx][:, 1]  # mid
+        evects[i, 2] = _evect[idx][:, 2]  # max
 
         if np.isnan(np.sum(np.array(evects[i]))):
             print("warning: nan in evect")
@@ -807,8 +806,9 @@ def material_mapping_spline(
 
     if cfg.homogenization.orthotropic_cortex is True:
         closest_distances_cort, closest_phys_points_cort = getClosestPhysPoint(
-            cog_real_cort_np, bone["cort_projection_MSL_centroids_mm"]
+            cog_real_cort_np, bone["evect_origin"]
         )
+
     else:
         closest_distances_cort, closest_phys_points_cort = getClosestPhysPoint(
             cog_real_cort_np, MSL_centroids_mm

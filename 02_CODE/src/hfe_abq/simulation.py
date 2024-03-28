@@ -21,7 +21,7 @@ def simulate_loadcase(cfg, sample: str, inputfile: str, umat: str, loadcase: str
     ABAQUS = cfg.solver.abaqus
     NPROCS = cfg.abaqus.abaqus_nprocs
     RAM = cfg.abaqus.abaqus_memory
-    SCRATCH = cfg.abaqus.scratchdir
+    SCRATCH = cfg.socket_paths.scratchdir
     # if loadcase is not an empty string, then:
     if not loadcase:
         job = sample + "_" + cfg.version.current_version[0:2]

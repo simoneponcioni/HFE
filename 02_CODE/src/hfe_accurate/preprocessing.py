@@ -1,11 +1,10 @@
 import gc
-from typing import Literal
 
-import fast_simplification as fs  # type: ignore
 import numpy as np
-import pyvista as pv  # type: ignore
 import vtk  # type: ignore
+from hfe_accurate.project_normals_cortex import clustered_point_normals
 from hfe_accurate.struct_voxel_indices import map_isosurface  # type: ignore
+from hfe_accurate.surface_nets import surface_nets
 from hfe_utils.imutils import numpy2vtk
 from hfe_utils.io_utils import timeit
 from numba import njit  # type: ignore
@@ -73,16 +72,17 @@ def calculate_bvtv(
 
 
 @timeit
-def input_sanity_check(SEG_array, trabmask, spacing, tolerance, dimZ):
+def input_sanity_check(SEG_array, trabmask, cortmask, spacing, tolerance, dimZ):
     if not isinstance(SEG_array, vtk.vtkImageData):
         SEGim_vtk = numpy2vtk(SEG_array, spacing)
 
     trabmask = fmt_sanity_check(trabmask)
+    cortmask = fmt_sanity_check(cortmask)
     spacing = fmt_sanity_check(spacing)
     tolerance = fmt_sanity_check(tolerance)
     dimZ = fmt_sanity_check(dimZ)
 
-    return SEGim_vtk, trabmask, spacing, tolerance, dimZ
+    return SEGim_vtk, trabmask, cortmask, spacing, tolerance, dimZ
 
 
 def fmt_sanity_check(in_file):
@@ -122,6 +122,7 @@ def __mask_cogs__(
 
 
 def __assign_to_mask__(
+    cfg,
     COG_temp: np.ndarray,
     trabmask: np.ndarray,
     mask_cog: np.ndarray,
@@ -158,16 +159,23 @@ def __assign_to_mask__(
     cog_points_trab = cog_points_temp[in_trab_mask]
     indices_trab = np.where(in_trab_mask)[0]
 
-    in_cort_mask = (
-        ~in_trab_mask & (0 + tolerance <= z_coords) & (z_coords <= dimZ_min_tolerance)
-    )
-    cog_points_cort = cog_points_temp[in_cort_mask]
-    indices_cort = np.where(in_cort_mask)[0]
+    if cfg.homogenization.orthotropic_cortex is True:
+        cog_points_cort = None
+        indices_cort = None
+
+    else:
+        in_cort_mask = (
+            ~in_trab_mask
+            & (0 + tolerance <= z_coords)
+            & (z_coords <= dimZ_min_tolerance)
+        )
+        cog_points_cort = cog_points_temp[in_cort_mask]
+        indices_cort = np.where(in_cort_mask)[0]
     return cog_points_trab, indices_trab, cog_points_cort, indices_cort
 
 
 @timeit
-def compute_dyadic_product_einsum(PointNormalArray, indices_cort, indices_trab):
+def compute_dyadic_product_einsum(cfg, PointNormalArray, indices_cort, indices_trab):
     """
         Computes the dyadic product of the normal vectors of the cells in the cortical and trabecular regions
         of the triangulated surface using the Einstein summation convention.
@@ -191,14 +199,19 @@ def compute_dyadic_product_einsum(PointNormalArray, indices_cort, indices_trab):
             dyads.extend(batch_dyads)
         return dyads
 
-    dyadic_cort_einsum = _compute_dyad(PointNormalArray, indices_cort, batch_size=1000)
+    if cfg.homogenization.orthotropic_cortex is True:
+        dyadic_cort_einsum = None
+    else:
+        dyadic_cort_einsum = _compute_dyad(
+            PointNormalArray, indices_cort, batch_size=1000
+        )
     dyadic_trab_einsum = _compute_dyad(PointNormalArray, indices_trab, batch_size=1000)
     print("4b/6 Computation dyadic products finished")
     return dyadic_cort_einsum, dyadic_trab_einsum
 
 
 @timeit
-def compute_cell_area(vtkNormals, indices_cort, indices_trab):
+def compute_cell_area(cfg, vtkNormals, indices_cort, indices_trab):
     """
     Computes the area of each cell in the cortical and trabecular regions of the triangulated surface.
 
@@ -219,96 +232,15 @@ def compute_cell_area(vtkNormals, indices_cort, indices_trab):
     qualityArray = triangleCellAN.GetOutput().GetCellData().GetArray("Quality")
 
     qualityArray_np = vtk_to_numpy(qualityArray)
-    area_cort = qualityArray_np[indices_cort]
+
+    if cfg.homogenization.orthotropic_cortex is True:
+        area_cort = None
+    else:
+        area_cort = qualityArray_np[indices_cort]
     area_trab = qualityArray_np[indices_trab]
 
     print("5/6 Computation cell area finished")
     return area_cort, area_trab
-
-
-@timeit
-def surface_nets(
-    imvtk,
-    output_mesh_type: Literal["quads", "tri"] = "tri",
-    output_style: Literal["default", "boundary"] = "default",
-    smoothing: bool = False,
-    decimate: bool = False,
-    smoothing_num_iterations: int = 50,
-    target_reduction: float = 0.9,
-):
-    """
-    Applies the Surface Nets algorithm to a given vtkImageData object.
-
-    Parameters:
-    imvtk (vtk.vtkImageData): The input image data.
-    output_mesh_type (str, optional): The type of mesh to output.
-        Can be either "quads" or "tri". Defaults to "tri".
-    output_style (str, optional): The style of the output.
-        Can be either "default" or "boundary". Defaults to "default".
-    smoothing (bool, optional): Whether to apply smoothing to the output.
-        Defaults to False.
-    smoothing_num_iterations (int, optional): The number of iterations
-        to perform if smoothing is enabled. Defaults to 50.
-    smoothing_relaxation_factor (float, optional):
-        The relaxation factor to use if smoothing is enabled. Defaults to 0.5.
-    smoothing_constraint_distance (float, optional):
-        The constraint distance to use if smoothing is enabled. Defaults to 1.
-
-    Raises:
-    ValueError: If an invalid output mesh type or output style is provided.
-    NotImplementedError: If the selected output style is not implemented.
-
-    Returns:
-    pv.core.pointset.UnstructuredGrid: Mesh after applying Surface Nets.
-    """
-    TARGET_REDUCTION = target_reduction
-
-    num_labels = int(imvtk.GetPointData().GetScalars().GetRange()[1])
-
-    surfnets = vtk.vtkSurfaceNets3D()
-    surfnets.SetInputData(imvtk)
-
-    if num_labels is not None:
-        surfnets.GenerateLabels(num_labels, 1, num_labels)
-
-    if output_mesh_type == "quads":
-        surfnets.SetOutputMeshTypeToQuads()
-    elif output_mesh_type == "tri":
-        surfnets.SetOutputMeshTypeToTriangles()
-    else:
-        raise ValueError(
-            f'Invalid output mesh type "{output_mesh_type}", use "quads" or "tri"'
-        )
-    if output_style == "default":
-        surfnets.SetOutputStyleToDefault()
-    elif output_style == "boundary":
-        surfnets.SetOutputStyleToBoundary()
-    elif output_style == "selected":
-        raise NotImplementedError(f'Output style "{output_style}" is not implemented')
-    else:
-        raise ValueError(
-            f'Invalid output style "{output_style}", use "default" or "boundary"'
-        )
-
-    surfnets.Update()
-    mesh = pv.wrap(surfnets.GetOutput())
-
-    # Decimation
-    if decimate:
-        mesh = fs.simplify_mesh(
-            mesh, target_reduction=TARGET_REDUCTION, agg=8, verbose=True
-        )
-
-    # Smoothing
-    if smoothing:
-        mesh = mesh.smooth_taubin(n_iter=smoothing_num_iterations, pass_band=0.5)
-
-    # save mesh for debugging
-    # timenow = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    # mesh.save(f"mesh_{timenow}.vtk")
-
-    print("1/6 STL file creation finished")
-    return mesh
 
 
 @timeit
@@ -333,7 +265,7 @@ def get_cell_centers(vtk_output):
 
 
 @timeit
-def assign_vtk2cell(cog_temp, spacing, dimZ, tolerance, trabmask):
+def assign_vtk2cell(cfg, cog_temp, spacing, dimZ, tolerance, trabmask):
     """
     Assigns each triangle of the mesh to either the trabecular or cortical mask
     based on the position of its center of gravity.
@@ -360,7 +292,9 @@ def assign_vtk2cell(cog_temp, spacing, dimZ, tolerance, trabmask):
         indices_trab,
         cog_points_cort,
         indices_cort,
-    ) = __assign_to_mask__(cog_temp, trabmask, mask_cog, dimZ_min_tolerance, tolerance)
+    ) = __assign_to_mask__(
+        cfg, cog_temp, trabmask, mask_cog, dimZ_min_tolerance, tolerance
+    )
     print("3/6 Assignment of vtk cells to trabecular and cortical mask finished")
     return cog_points_trab, indices_trab, cog_points_cort, indices_cort
 
@@ -392,6 +326,7 @@ def compute_cell_normals(STL):
 
 @timeit
 def get_area_dyadic(
+    cfg,
     area_cort: np.ndarray,
     area_trab: np.ndarray,
     dyadic_cort: list[np.ndarray],
@@ -415,10 +350,16 @@ def get_area_dyadic(
     - Tuple[np.ndarray, np.ndarray]: A tuple containing the computed cortical
                                     and trabecular area dyadic values.
     """
-    reshaped_area_cort = np.reshape(area_cort, (-1, 1, 1))
+    if cfg.homogenization.orthotropic_cortex is True:
+        areadyadic_cort = None
+    else:
+        reshaped_area_cort = np.reshape(area_cort, (-1, 1, 1))
     reshaped_area_trab = np.reshape(area_trab, (-1, 1, 1))
 
-    areadyadic_cort = np.multiply(reshaped_area_cort, dyadic_cort)
+    if cfg.homogenization.orthotropic_cortex is True:
+        areadyadic_cort = None
+    else:
+        areadyadic_cort = np.multiply(reshaped_area_cort, dyadic_cort)
     areadyadic_trab = np.multiply(reshaped_area_trab, dyadic_trab)
     print("6/6 Computation dyadic areas finished")
     return areadyadic_cort, areadyadic_trab
@@ -454,7 +395,7 @@ def smooth_kernel(MSL: np.ndarray, ROI_kernel_size: int) -> np.ndarray:
 
 
 @timeit
-def msl_triangulation(SEG_array, trabmask, spacing, tolerance):
+def msl_triangulation(cfg, SEG_array, cortmask, trabmask, spacing, tolerance):
     """
     This function is used for evaluating MSL fabric tensors.
     Fabric tensors are returned in two sets:
@@ -465,10 +406,11 @@ def msl_triangulation(SEG_array, trabmask, spacing, tolerance):
 
     Parameters
     ----------
-    SEGim_vtk           image array of segmentation [X, Y, Z]
-    tolerance           tolerance value for z-dimension
-    trabmask            binary trabecular mask image [X, Y, Z]
+    SEG_array           image array of segmentation [X, Y, Z]
     cortmask            binary cortical mask image [X, Y, Z]
+    trabmask            binary trabecular mask image [X, Y, Z]
+    spacing             list of spacing in 3D [X, Y, Z]
+    tolerance           # TODO: add description of tolerance
 
     Returns
     -------
@@ -488,7 +430,14 @@ def msl_triangulation(SEG_array, trabmask, spacing, tolerance):
     - Adaptation of assign_MSL_triangulation function to account
         for the transformation (M. Indermaur, 2023)
     - Improved memory and CPU time performance (S. Poncioni, 2023)
+    - Cortical compartment as orthotropic material, uses cortical mask to calculate (S. Poncioni, 2024)
     """
+    # TODO: mask SEG_vtk with size of trabmask (we don't calculate everything also for cortex)
+    ORTHOTROPIC_CORTEX = cfg.homogenization.orthotropic_cortex
+    if ORTHOTROPIC_CORTEX is True:
+        # mask SEG_vtk with trabmask with boolean
+        SEG_array = np.where(trabmask, SEG_array, 0)
+
     # * 0/6 Input sanity check
     try:
         dimZ = (np.shape(SEG_array) * spacing)[2]
@@ -496,13 +445,11 @@ def msl_triangulation(SEG_array, trabmask, spacing, tolerance):
         spacing = spacing[0]  # assuming isotropic spacing
         dimZ = (np.shape(SEG_array) * spacing)[2]
 
-    SEG_vtk, trabmask, spacing, tolerance, dimZ = input_sanity_check(
-        SEG_array, trabmask, spacing, tolerance, dimZ
+    SEG_vtk, trabmask, cortmask, spacing, tolerance, dimZ = input_sanity_check(
+        SEG_array, trabmask, cortmask, spacing, tolerance, dimZ
     )
 
-    # TODO: mask SEG_vtk with size of trabmask (we don't calculate everything also for cortex)
-
-    # * 1/6 STL file creation
+    # * 1/6 STL file creation for trabecular compartment
     surfnet_output = surface_nets(
         SEG_vtk,
         output_mesh_type="tri",
@@ -512,12 +459,12 @@ def msl_triangulation(SEG_array, trabmask, spacing, tolerance):
         smoothing_num_iterations=10,
     )
 
+    del SEG_vtk
+    gc.collect()
+
     # * 2/6 Calculation of Number of cells
     cog_temp = get_cell_centers(surfnet_output)
     nfacet = surfnet_output.GetNumberOfCells()
-
-    del SEG_vtk
-    gc.collect()
 
     # * 3/6 Computation COG
     (
@@ -526,6 +473,7 @@ def msl_triangulation(SEG_array, trabmask, spacing, tolerance):
         cog_points_cort,
         indices_cort,
     ) = assign_vtk2cell(
+        cfg,
         cog_temp,
         spacing,
         dimZ,
@@ -537,7 +485,7 @@ def msl_triangulation(SEG_array, trabmask, spacing, tolerance):
     PointNormalArray, vtkNormals = compute_cell_normals(surfnet_output)
 
     dyadic_cort, dyadic_trab = compute_dyadic_product_einsum(
-        PointNormalArray, indices_cort, indices_trab
+        cfg, PointNormalArray, indices_cort, indices_trab
     )
 
     del (
@@ -548,11 +496,13 @@ def msl_triangulation(SEG_array, trabmask, spacing, tolerance):
     gc.collect()
 
     # * 5/6 Computation of the cell area
-    area_cort, area_trab = compute_cell_area(vtkNormals, indices_cort, indices_trab)
+    area_cort, area_trab = compute_cell_area(
+        cfg, vtkNormals, indices_cort, indices_trab
+    )
 
     # * 6/6 Computation of the area dyadic
     areadyadic_cort, areadyadic_trab = get_area_dyadic(
-        area_cort, area_trab, dyadic_cort, dyadic_trab
+        cfg, area_cort, area_trab, dyadic_cort, dyadic_trab
     )
 
     nfacet_range = np.arange(nfacet)
@@ -587,6 +537,7 @@ def compute_msl_spline(bone: dict, cfg):
     spacing = bone["Spacing"]
     SEG_array = bone["SEG_array"]
     TRABMASK_array = bone["TRABMASK_array"]
+    CORTMASK_array = bone["CORTMASK_array"]
 
     (
         cog_points_cort,
@@ -597,10 +548,7 @@ def compute_msl_spline(bone: dict, cfg):
         indices_cort,
         indices_trab,
     ) = msl_triangulation(
-        SEG_array,
-        TRABMASK_array,
-        spacing,
-        STL_tolerance,
+        cfg, SEG_array, CORTMASK_array, TRABMASK_array, spacing, STL_tolerance
     )
 
     # ? maybe I won't need to copy these into the bone dict (POS, 10.07.2023)
@@ -618,23 +566,33 @@ def compute_msl_spline(bone: dict, cfg):
     # Assign areadyadic values
     # ----------------------------------------------------------------
     # Each areadyadic value of a triangle is added to the pool of FE element it's lying in
+    if cfg.homogenization.orthotropic_cortex is True:
+        MSL_values_cort = None
+        MSL_kernel_list_cort = None
+        # Calculate projected eigenvector from cortical mask
+        (
+            evect_origin,
+            evect,
+        ) = clustered_point_normals(cfg, CORTMASK_array, TRABMASK_array, spacing)
+        bone["evect_origin"] = evect_origin
+        bone["cort_projection_evect"] = evect
+    else:
+        MSL_values_cort = map_isosurface(
+            cog_points_cort, areadyadic_cort, DIMS=DIMS_int
+        )
+        MSL_kernel_cort = smooth_kernel(MSL_values_cort, ROI_kernel_size_cort)
+        MSL_kernel_cort = np.transpose(MSL_kernel_cort, (2, 1, 0, 3, 4))
+        MSL_kernel_list_cort = np.reshape(
+            MSL_kernel_cort, (int(np.size(MSL_kernel_cort) / 9), 3, 3)
+        )
+
     MSL_values_trab = map_isosurface(cog_points_trab, areadyadic_trab, DIMS=DIMS_int)
-    MSL_values_cort = map_isosurface(cog_points_cort, areadyadic_cort, DIMS=DIMS_int)
-
-    # apply smoothing kernel
-    # ----------------------------------------------------------------
     MSL_kernel_trab = smooth_kernel(MSL_values_trab, ROI_kernel_size_trab)
-    MSL_kernel_cort = smooth_kernel(MSL_values_cort, ROI_kernel_size_cort)
-
     # transpose to conventional orientation
     MSL_kernel_trab = np.transpose(MSL_kernel_trab, (2, 1, 0, 3, 4))
-    MSL_kernel_cort = np.transpose(MSL_kernel_cort, (2, 1, 0, 3, 4))
 
     MSL_kernel_list_trab = np.reshape(
         MSL_kernel_trab, (int(np.size(MSL_kernel_trab) / 9), 3, 3)
-    )
-    MSL_kernel_list_cort = np.reshape(
-        MSL_kernel_cort, (int(np.size(MSL_kernel_cort) / 9), 3, 3)
     )
 
     bone["MSL_kernel_list_trab"] = MSL_kernel_list_trab

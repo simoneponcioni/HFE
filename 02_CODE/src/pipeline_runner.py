@@ -48,17 +48,17 @@ with warnings.catch_warnings(record=True) as w:
 def standalone_execution_sequential(cfg: HFEConfig):
     start_full = time()
     time_dict = {}
-    for grayscale_filename in cfg.simulations.grayscale_filenames:
-        try:
-            folder_id = cfg.simulations.folder_id[grayscale_filename]
-            time_record, summary_path = pipeline_hfe(cfg, folder_id, grayscale_filename)
-            time_dict.update({grayscale_filename: time_record})
-            logger.info(f"Simulation successful for {grayscale_filename}")
-        except Exception as exc:
-            # except Warning as e:
-            time_dict.update({grayscale_filename: "-"})
-            print(f"Generated an exception: {exc}")
-            logger.error(f"Simulation failed for {grayscale_filename}")
+    try:
+        grayscale_filename = cfg.simulations.grayscale_filenames
+        folder_id = cfg.simulations.folder_id[grayscale_filename]
+        time_record, summary_path = pipeline_hfe(cfg, folder_id, grayscale_filename)
+        time_dict.update({grayscale_filename: time_record})
+        logger.info(f"Simulation successful for {grayscale_filename}")
+    except Exception as exc:
+        # except Warning as e:
+        time_dict.update({grayscale_filename: "-"})
+        print(f"Generated an exception: {exc}")
+        logger.error(f"Simulation failed for {grayscale_filename}")
 
     end_full = time()
     time_record_full = end_full - start_full

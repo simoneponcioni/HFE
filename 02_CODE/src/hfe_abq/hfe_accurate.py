@@ -11,20 +11,20 @@ UPDATES:
 """
 
 import os
+import sys
 from pathlib import Path
+from shutil import move
 from time import time
 
-import hfe_abq.create_loadcases as create_loadcases
 import hfe_abq.aim2fe as aim2fe
+import hfe_abq.create_loadcases as create_loadcases
+import hfe_abq.simulation as simulation
+import hfe_accurate.postprocessing as postprocessing
 import hfe_utils.imutils as imutils
+import hfe_utils.print_optim_report as por
+import numpy as np
 import yaml
 from hfe_utils.io_utils import print_mem_usage, write_timing_summary
-import hfe_abq.simulation as simulation
-import sys
-import hfe_accurate.postprocessing as postprocessing
-import hfe_utils.print_optim_report as por
-from shutil import move
-import numpy as np
 
 os.environ["NUMEXPR_MAX_THREADS"] = "16"
 
@@ -33,14 +33,15 @@ os.environ["NUMEXPR_MAX_THREADS"] = "16"
 
 
 def pipeline_hfe(cfg, folder_id, grayscale_filename):
-
-    n_sim = int(8)  #! has to match sweep in config
+    """
+    # TODO: reactivate for sensitivity analysis
+    n_sim = int(10)  # has to match sweep in config
     # min = 3, 5, 1, 7
     # max = 20, 50, 10, 50 did not work, reducing to 20, 40, 10, 40
-    n_elms_longitudinal = np.linspace(1, 5, n_sim, dtype=int)
-    n_elms_transverse_trab = np.linspace(2, 5, n_sim, dtype=int)
-    n_elms_transverse_cort = np.linspace(1, 1, n_sim, dtype=int)
-    n_radial = np.linspace(3, 10, n_sim, dtype=int)
+    n_elms_longitudinal = np.linspace(5, 15, n_sim, dtype=int)
+    n_elms_transverse_trab = np.linspace(5, 30, n_sim, dtype=int)
+    n_elms_transverse_cort = np.linspace(1, 8, n_sim, dtype=int)
+    n_radial = np.linspace(7, 40, n_sim, dtype=int)
 
     # update meshing settings with sweep factor for sensitivity analysis
     sweep = cfg.meshing_settings.sweep_factor
@@ -54,6 +55,7 @@ def pipeline_hfe(cfg, folder_id, grayscale_filename):
         n_elms_transverse_cort[sweep - 1].item()
     )
     cfg.meshing_settings.n_elms_radial = int(n_radial[sweep - 1].item())
+    """
 
     # timing
     time_record = {}
@@ -62,7 +64,7 @@ def pipeline_hfe(cfg, folder_id, grayscale_filename):
     print_mem_usage()
 
     # Sets paths
-    workdir = cfg.paths.workdir
+    workdir = cfg.socket_paths.workdir
     origaimdir = Path(workdir, cfg.paths.origaimdir)
     aimdir = Path(workdir, cfg.paths.aimdir)
     feadir = Path(workdir, cfg.paths.feadir)

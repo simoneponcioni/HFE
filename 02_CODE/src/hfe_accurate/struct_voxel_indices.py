@@ -18,11 +18,13 @@ config.THREADING_LAYER = "threadsafe"
 
 # set the number of threads for parallel computation with numba
 max_threads = multiprocessing.cpu_count()
-if max_threads >= 16:
-    set_num_threads(12)
-else:
-    set_num_threads(max_threads - 2)
-
+try:
+    if max_threads >= 16:
+        set_num_threads(12)
+    else:
+        set_num_threads(max_threads - 2)
+except ValueError:
+    max_threads = 1
 
 @timeit
 def _range(pts):

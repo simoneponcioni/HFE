@@ -10,6 +10,7 @@ UPDATES:
 - Updated to run multiple simulations independently in parallel (POS)
 """
 
+import logging
 import os
 import sys
 from pathlib import Path
@@ -28,6 +29,20 @@ from hfe_utils.io_utils import print_mem_usage, write_timing_summary
 
 os.environ["NUMEXPR_MAX_THREADS"] = "16"
 
+LOGGING_NAME = "HFE-ACCURATE"
+logger = logging.getLogger(LOGGING_NAME)
+logger.setLevel(logging.INFO)
+handler = logging.FileHandler("./pipeline_runner.log")
+handler.setLevel(logging.INFO)
+
+console_handler = logging.StreamHandler()
+console_handler.setLevel(logging.INFO)
+formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+handler.setFormatter(formatter)
+console_handler.setFormatter(formatter)
+
+logger.addHandler(handler)
+logger.addHandler(console_handler)
 
 # flake8: noqa: E402, W503
 
@@ -108,8 +123,8 @@ def pipeline_hfe(cfg, folder_id, grayscale_filename):
         simulation.simulate_loadcase(cfg, grayscale_filename, inputfile, umat, "")
         end_simulation = time()
     except Exception:
-        print("Simulation of FZ_MAX loadcase resulted in error")
-        print(sys.stderr)
+        logger.error("Simulation of FZ_MAX loadcase resulted in error")
+        logger.error(sys.stderr)
         end_simulation = time()
         pass
     else:
@@ -164,7 +179,9 @@ def pipeline_hfe(cfg, folder_id, grayscale_filename):
             Path(sampledir) / f"simulation_current_time_{current_time}"
         )
         child_dir_time_path.mkdir(parents=True, exist_ok=True)
-        print(f"File in this location already exists, moving to {child_dir_time_path}")
+        logger.info(
+            f"File in this location already exists, moving to {child_dir_time_path}"
+        )
         for file in os.listdir(sampledir_parent):
             if os.path.isfile(os.path.join(sampledir_parent, file)):
                 move(os.path.join(sampledir_parent, file), child_dir_time_path)

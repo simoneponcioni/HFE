@@ -1,5 +1,5 @@
 import copy
-import logging as logger
+import logging
 import pickle
 import sys
 import warnings
@@ -14,6 +14,22 @@ import numpy as np
 import scipy  # type: ignore
 from hfe_abq.write_abaqus import AbaqusWriter
 from scipy.spatial import KDTree  # type: ignore
+
+LOGGING_NAME = "HFE-ACCURATE"
+logger = logging.getLogger(LOGGING_NAME)
+logger.setLevel(logging.INFO)
+handler = logging.FileHandler("./pipeline_runner.log")
+handler.setLevel(logging.INFO)
+
+console_handler = logging.StreamHandler()
+console_handler.setLevel(logging.INFO)
+formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+handler.setFormatter(formatter)
+console_handler.setFormatter(formatter)
+
+logger.addHandler(handler)
+logger.addHandler(console_handler)
+
 
 # flake8: noqa: E501
 
@@ -269,7 +285,7 @@ def __material_mapping__(
 
     timeend = time()
     elaps_time = timeend - timestart
-    print(f"Elapsed time for {compartment_s} compartment: {elaps_time} seconds")
+    logger.info(f"Elapsed time for {compartment_s} compartment: {elaps_time} seconds")
     return phi, rho, rho_fe
 
 
@@ -433,7 +449,6 @@ def __get_fe_dims__(img_shape: tuple, FEelSize: float, Spacing: float):
     - FEdimZ (int): dimension of the FE mesh in the Z direction
     - CoarseFactor (float): coarsening factor used to construct the FE mesh
     """
-    print("BVTVscaled_shape: ", img_shape)
 
     CoarseFactor = FEelSize / Spacing
     MESH = np.ones(
@@ -554,13 +569,15 @@ def vectoronplane(
         scal_mid_min = np.dot(evect_mid_projected, evect_min_projected)
 
         if scal_max_mid + scal_max_min + scal_mid_min > 0.001:
-            print("projected vectors are not orthogonal!")
+            logger.warning("projected vectors are not orthogonal!")
 
     except:
         evect_min_projected = evect_min
         evect_mid_projected = evect_mid
         evect_max_projected = evect_max
-        print("Could not perform the vector projection in utils.vectoronplane()!")
+        logger.error(
+            "Could not perform the vector projection in utils.vectoronplane()!"
+        )
 
     return evect_min_projected, evect_mid_projected, evect_max_projected
 
@@ -599,7 +616,7 @@ def __compute_eval_evect_projection__(MSL_kernel_list_cort, elms, BVcortseg, _ev
         evects[i, 2] = _evect[idx][:, 2]  # max
 
         if np.isnan(np.sum(np.array(evects[i]))):
-            print("warning: nan in evect")
+            logger.warning("warning: nan in evect")
             # return 3x3 identity matrix
             _, evects[i] = compute_isoFAB()
         evals[i] = cai_evalues()  # Cai et al, Acta Biomater. 2019
@@ -644,7 +661,7 @@ def __compute_eval_evect__(MSL_kernel_list, elms, BVseg, projection=True):
             evalue, evect = scipy.linalg.eig(MSL)
 
         except Exception as e:
-            print(
+            logger.exception(
                 f"Exception n. {ee}: {e}\nMSL_kernel_list[i]:\n{MSL_kernel_list[idx]}\nBVseg[i]:\n{BVseg[i]}\n"
             )
             ee += 1
@@ -667,7 +684,7 @@ def __compute_eval_evect__(MSL_kernel_list, elms, BVseg, projection=True):
         _lim = float(2.5)
         if np.any(np.array(evalue) > _lim):
             # raise ValueError(f"evalue > {_lim} in element {i}")
-            print(f"Exception n. {eee}:\nevalue > {_lim} in element {i}")
+            logger.exception(f"Exception n. {eee}:\nevalue > {_lim} in element {i}")
             eee += 1
             evalue, evect = compute_isoFAB()
             evalue = np.array([e.real for e in evalue])
@@ -675,8 +692,8 @@ def __compute_eval_evect__(MSL_kernel_list, elms, BVseg, projection=True):
 
         evals[i] = evalue
         evects[i] = evect
-    print(f"MSL exception encountered {ee} times")
-    print(f"Eigenvector exception encountered {eee} times")
+    logger.exception(f"MSL exception encountered {ee} times")
+    logger.exception(f"Eigenvector exception encountered {eee} times")
     return evals, evects
 
 
@@ -851,7 +868,7 @@ def material_mapping_spline(
         bone["nel_CORT"] = len(m_cort)
         bone["nel_TRAB"] = len(m_trab)
 
-        print(
+        logger.info(
             f"The following number of elements were mapped for each phase\n"
             f"  - Cortical:\t{len(m_cort)}\n"
             f"  - Trabecular:\t{len(m_trab)}\n"
@@ -924,9 +941,9 @@ def material_mapping_spline(
     abq_dictionary = abq.abq_dictionary(umat_name=umat_name_s)
     inp_path = abq.abaqus_writer(_ver)
 
-    print("Writing vtk maps of fabric for visualization:")
+    logger.info("Writing vtk maps of fabric for visualization:")
     utils.fab2vtk_fromdict(filenames["VTKname"], abq_dictionary)
-    print("Writing vtk maps of fabric for visualization: Done")
+    logger.info("Writing vtk maps of fabric for visualization: Done")
     # extend m with cort and trab
     m = np.append(m_cort, m_trab)
     mm = np.append(mm_cort, mm_trab, axis=0)

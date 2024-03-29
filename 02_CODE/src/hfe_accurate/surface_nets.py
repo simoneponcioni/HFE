@@ -1,9 +1,25 @@
+import logging
 from typing import Literal
 
 import fast_simplification as fs  # type: ignore
 import pyvista as pv
 import vtk  # type: ignore
 from hfe_utils.io_utils import timeit
+
+LOGGING_NAME = "HFE-ACCURATE"
+logger = logging.getLogger(LOGGING_NAME)
+logger.setLevel(logging.INFO)
+handler = logging.FileHandler("./pipeline_runner.log")
+handler.setLevel(logging.INFO)
+
+console_handler = logging.StreamHandler()
+console_handler.setLevel(logging.INFO)
+formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+handler.setFormatter(formatter)
+console_handler.setFormatter(formatter)
+
+logger.addHandler(handler)
+logger.addHandler(console_handler)
 
 
 @timeit
@@ -87,5 +103,5 @@ def surface_nets(
     # timenow = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     # mesh.save(f"mesh_{timenow}.vtk")
 
-    print("1/6 STL file creation finished")
+    logger.info("1/6 STL file creation finished")
     return mesh

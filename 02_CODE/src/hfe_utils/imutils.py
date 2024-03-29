@@ -1,3 +1,4 @@
+import logging
 from pathlib import Path
 from struct import unpack
 
@@ -11,6 +12,22 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable  # type: ignore
 from vtk.util.numpy_support import numpy_to_vtk, vtk_to_numpy  # type: ignore
 
 # flake8: noqa: E501
+
+
+LOGGING_NAME = "HFE-ACCURATE"
+logger = logging.getLogger(LOGGING_NAME)
+logger.setLevel(logging.INFO)
+handler = logging.FileHandler("./pipeline_runner.log")
+handler.setLevel(logging.INFO)
+
+console_handler = logging.StreamHandler()
+console_handler.setLevel(logging.INFO)
+formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+handler.setFormatter(formatter)
+console_handler.setFormatter(formatter)
+
+logger.addHandler(handler)
+logger.addHandler(console_handler)
 
 
 def vtk2numpy(imvtk):
@@ -272,7 +289,7 @@ def read_img_param(filenames):
             filenames["RAWname"], np.array([0.0606997, 0.0606997, 0.0606997])
         )
     except Exception as e:
-        print(f"An error occurred while using AIMreader: {e}")
+        logger.exception(f"An error occurred while using AIMreader: {e}")
 
     return spacing, scaling, slope, intercept
 
@@ -303,7 +320,6 @@ def read_aim(name, filenames, bone, lock):
     if name == "SEG":
         IMG_array[IMG_array == 127] = 2
         IMG_array[IMG_array == 126] = 1
-        # TODO: test this (POS, 22.03.2024)
         IMG_array = IMG_array.astype(int)
         with lock:
             bone[name + "_array"] = IMG_array
@@ -418,7 +434,7 @@ def compute_bvtv_d_seg(bone: dict, sample: str) -> dict:
     -------
     bone: dict
     """
-    print("\n ... compute BVTV and BVTVd")
+    logger.info("\n ... compute BVTV and BVTVd")
     SEG = bone["SEG_array"]
     SEG[SEG > 0] = 1
     seg_voxels = np.sum(SEG[SEG > 0])
@@ -525,7 +541,7 @@ def fab2vtk_fromdict(filename, abq_dict):
                     PHI = abq_dict[elem]["PHI"]
                     vtkFile.write(str(PHI) + "\n")
 
-            print(" ... vtk file written: " + vtkname)
+            logger.info(" ... vtk file written: " + vtkname)
     return None
 
 

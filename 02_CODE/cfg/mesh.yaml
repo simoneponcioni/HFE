@@ -12,7 +12,7 @@ meshing_settings:
   outside_val: 1                      # threshold value for the outside of the mask
   lower_thresh: 0                     # lower threshold for the mask
   upper_thresh: 0.9                   # upper threshold for the mask
-  s: 5                                # smoothing factor of the spline
+  s: 100                                # smoothing factor of the spline
   k: 3                                # degree of the spline
   interp_points: 350                  # number of points to interpolate the spline
   thickness_tol: 0.50                 # minimum cortical thickness tolerance: 3 * XCTII voxel size

@@ -1,3 +1,4 @@
+import logging
 import os
 from pathlib import Path
 from socket import gethostname
@@ -6,6 +7,21 @@ from time import time
 import numpy as np
 import psutil
 from omegaconf import OmegaConf
+
+LOGGING_NAME = "HFE-ACCURATE"
+logger = logging.getLogger(LOGGING_NAME)
+logger.setLevel(logging.INFO)
+handler = logging.FileHandler("./pipeline_runner.log")
+handler.setLevel(logging.INFO)
+
+console_handler = logging.StreamHandler()
+console_handler.setLevel(logging.INFO)
+formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+handler.setFormatter(formatter)
+console_handler.setFormatter(formatter)
+
+logger.addHandler(handler)
+logger.addHandler(console_handler)
 
 
 def ext(filename, new_ext):
@@ -17,7 +33,7 @@ def print_mem_usage():
     process = psutil.Process(os.getpid())
     mem_info = process.memory_info()
     mem_used_gb = mem_info.rss / (1024**3)  # Convert bytes to GB
-    print(f"{'Memory usage:'.ljust(20)}\t\t{mem_used_gb:.2f} (GB)")
+    logger.debug(f"{'Memory usage:'.ljust(20)}\t\t{mem_used_gb:.2f} (GB)")
     return None
 
 
@@ -27,7 +43,7 @@ def timeit(method):
         result = method(*args, **kwargs)
         te = time() - ts
         # modify '30' if the function name is longer
-        print(f"{method.__name__:<20}\t\t{te:.2f} (s)")
+        logger.debug(f"{method.__name__:<20}\t\t{te:.2f} (s)")
         print_mem_usage()
         return result
 
@@ -43,12 +59,12 @@ def log_append_processingtime(filename, time):
             "****************************************************************",
         ]
     )
-    print(time_summary)
+    logger.info(time_summary)
 
     with open(SUMname, "a") as sumUpdate:
         sumUpdate.write("\n")
         sumUpdate.write(time_summary)
-    print("... added processing time to summary file")
+    logger.info("... added processing time to summary file")
 
 
 def write_timing_summary(cfg, sample: str, time: dict):
@@ -72,7 +88,7 @@ def write_timing_summary(cfg, sample: str, time: dict):
     )
 
     with open(file_path, "w") as f:
-        print(time, file=f)
+        logger.debug(time, file=f)
 
 
 def set_filenames(cfg, sample, pipeline="fast", origaim_separate=True):

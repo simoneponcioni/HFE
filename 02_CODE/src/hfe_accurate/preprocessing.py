@@ -1,4 +1,5 @@
 import gc
+import logging
 
 import numpy as np
 import vtk  # type: ignore
@@ -11,6 +12,22 @@ from numba import njit  # type: ignore
 from scipy.ndimage.filters import convolve  # type: ignore
 from vtk.numpy_interface import dataset_adapter as dsa  # type: ignore
 from vtk.util.numpy_support import vtk_to_numpy  # type: ignore
+
+LOGGING_NAME = "HFE-ACCURATE"
+logger = logging.getLogger(LOGGING_NAME)
+logger.setLevel(logging.INFO)
+handler = logging.FileHandler("./pipeline_runner.log")
+handler.setLevel(logging.INFO)
+
+console_handler = logging.StreamHandler()
+console_handler.setLevel(logging.INFO)
+formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+handler.setFormatter(formatter)
+console_handler.setFormatter(formatter)
+
+
+logger.addHandler(handler)
+logger.addHandler(console_handler)
 
 
 def calculate_bvtv(
@@ -206,7 +223,7 @@ def compute_dyadic_product_einsum(cfg, PointNormalArray, indices_cort, indices_t
             PointNormalArray, indices_cort, batch_size=1000
         )
     dyadic_trab_einsum = _compute_dyad(PointNormalArray, indices_trab, batch_size=1000)
-    print("4b/6 Computation dyadic products finished")
+    logger.info("4b/6 Computation dyadic products finished")
     return dyadic_cort_einsum, dyadic_trab_einsum
 
 
@@ -239,7 +256,7 @@ def compute_cell_area(cfg, vtkNormals, indices_cort, indices_trab):
         area_cort = qualityArray_np[indices_cort]
     area_trab = qualityArray_np[indices_trab]
 
-    print("5/6 Computation cell area finished")
+    logger.info("5/6 Computation cell area finished")
     return area_cort, area_trab
 
 
@@ -260,7 +277,7 @@ def get_cell_centers(vtk_output):
     filt.Update()
     cog_temp_s = dsa.WrapDataObject(filt.GetOutput()).Points
     cog_temp = fmt_sanity_check(cog_temp_s)
-    print("2/6 Calculation of cell centers finished")
+    logger.info("2/6 Calculation of cell centers finished")
     return cog_temp
 
 
@@ -295,7 +312,7 @@ def assign_vtk2cell(cfg, cog_temp, spacing, dimZ, tolerance, trabmask):
     ) = __assign_to_mask__(
         cfg, cog_temp, trabmask, mask_cog, dimZ_min_tolerance, tolerance
     )
-    print("3/6 Assignment of vtk cells to trabecular and cortical mask finished")
+    logger.info("3/6 Assignment of vtk cells to trabecular and cortical mask finished")
     return cog_points_trab, indices_trab, cog_points_cort, indices_cort
 
 
@@ -320,7 +337,7 @@ def compute_cell_normals(STL):
     vtkNormals.AutoOrientNormalsOn()  # Only works with closed surface. All Normals will point outward.
     vtkNormals.Update()
     PointNormalArray = vtkNormals.GetOutput().GetCellData().GetNormals()
-    print("4a/6 Cell normals calculated")
+    logger.info("4a/6 Cell normals calculated")
     return PointNormalArray, vtkNormals
 
 
@@ -361,7 +378,7 @@ def get_area_dyadic(
     else:
         areadyadic_cort = np.multiply(reshaped_area_cort, dyadic_cort)
     areadyadic_trab = np.multiply(reshaped_area_trab, dyadic_trab)
-    print("6/6 Computation dyadic areas finished")
+    logger.info("6/6 Computation dyadic areas finished")
     return areadyadic_cort, areadyadic_trab
 
 

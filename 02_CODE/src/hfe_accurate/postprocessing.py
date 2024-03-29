@@ -1,5 +1,22 @@
+import logging
 from csv import writer
 from pathlib import Path
+
+LOGGING_NAME = "HFE-ACCURATE"
+logger = logging.getLogger(LOGGING_NAME)
+logger.setLevel(logging.INFO)
+handler = logging.FileHandler("./pipeline_runner.log")
+handler.setLevel(logging.INFO)
+
+
+console_handler = logging.StreamHandler()
+console_handler.setLevel(logging.INFO)
+formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+handler.setFormatter(formatter)
+console_handler.setFormatter(formatter)
+
+logger.addHandler(handler)
+logger.addHandler(console_handler)
 
 
 def remove_empty_entries_list(listname: list) -> list:
@@ -215,7 +232,7 @@ def write_data_summary(
     # Make summary file folder if not yet existing
     summary_path = Path(cfg.paths.sumdir)
     summary_path.mkdir(parents=True, exist_ok=True)
-    print(f"Directory '{summary_path}' created")
+    logger.debug(f"Directory '{summary_path}' created")
 
     # Create summary file if not yet existing
     filename = summary_path / (cfg.version.current_version + "_data_summary.csv")

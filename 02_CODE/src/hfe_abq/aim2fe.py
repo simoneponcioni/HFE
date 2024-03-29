@@ -10,6 +10,7 @@ Date: March 2024
 """
 
 import gc
+import logging
 import pickle
 import threading
 from pathlib import Path
@@ -19,8 +20,6 @@ import hfe_accurate.material_mapping as material_mapping
 import hfe_accurate.preprocessing as preprocessing
 import hfe_utils.imutils as imutils
 import hfe_utils.io_utils as io_utils
-import matplotlib
-import matplotlib.image as mpimg
 import matplotlib.pyplot as plt
 import numpy as np
 import SimpleITK as sitk
@@ -28,39 +27,20 @@ import yaml
 from mpl_toolkits.axes_grid1 import make_axes_locatable  # type: ignore
 from pyhexspline.spline_mesher import HexMesh  # type: ignore
 
-"""
-# flake8: noqa: W502
-from __future__ import print_function
-
-from importlib import reload
-
-import io_utils_SA as io_utils
-
-matplotlib.use("TkAgg")
-
-import preprocessing_SA as preprocessing
-import utils_SA as utils
-
-import logging
-
-import coloredlogs
-import material_mapping as material_mapping
-
-
-LOGGING_NAME = "MESHING"
-# configure the logger
+LOGGING_NAME = "HFE-ACCURATE"
 logger = logging.getLogger(LOGGING_NAME)
 logger.setLevel(logging.INFO)
-handler = logging.StreamHandler()
+handler = logging.FileHandler("./pipeline_runner.log")
 handler.setLevel(logging.INFO)
+
+console_handler = logging.StreamHandler()
+console_handler.setLevel(logging.INFO)
 formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 handler.setFormatter(formatter)
+console_handler.setFormatter(formatter)
+
 logger.addHandler(handler)
-coloredlogs.install(level=logging.INFO, logger=logger)
-
-
-config_mesh = io_utils.read_config_file("02_CODE/cfg/config_mesh.yaml")
-"""
+logger.addHandler(console_handler)
 
 
 def _helper_store_bone_dict(bone: dict, basepath: Path, _mesh: str):
@@ -275,10 +255,10 @@ def aim2fe_psl(cfg, sample):
     # ---------------------------------------------------------------------------------
     # Compute MSL kernel list
     if cfg.homogenization.fabric_type == "local":
-        print("Computing local MSL kernel list")
+        logger.info("Computing local MSL kernel list")
         bone = preprocessing.compute_msl_spline(bone, cfg)
     elif cfg.homogenization.fabric_type == "global":
-        print("Computing global MSL kernel list")
+        logger.info("Computing global MSL kernel list")
         pass
     else:
         raise ValueError("Fabric type not recognised")
@@ -304,11 +284,11 @@ def aim2fe_psl(cfg, sample):
 
     # 5 Compute and store summary and performance variables
     # ---------------------------------------------------------------------------------
-    print("Computing summary variables")
+    logger.info("Computing summary variables")
     summary_variables = preprocessing.set_summary_variables(bone)
     # io_utils.log_summary(bone, cfg, filenames, summary_variables)
     bone = dict(list(bone.items()) + list(summary_variables.items()))
-    print("Summary variables computed")
+    logger.info("Summary variables computed")
 
     if cfg.mesher.meshing == "spline":
         imutils.plot_MSL_fabric_spline(cfg, abq_dictionary, sample)

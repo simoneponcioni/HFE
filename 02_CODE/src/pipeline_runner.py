@@ -2,6 +2,7 @@
 # update: pipeline_accurate_latest.py takes the grayscale filename as a parsed argument
 # this code creates a list of executables to run in parallel
 
+
 import logging
 import warnings
 from enum import Enum
@@ -57,12 +58,12 @@ def standalone_execution_sequential(cfg: HFEConfig):
     except Exception as exc:
         # except Warning as e:
         time_dict.update({grayscale_filename: "-"})
-        print(f"Generated an exception: {exc}")
+        logger.error(f"Generated an exception: {exc}")
         logger.error(f"Simulation failed for {grayscale_filename}")
 
     end_full = time()
     time_record_full = end_full - start_full
-    print("Execution time:")
+    logger.info("Execution time:")
     pprint(time_record_full, width=1)
     # io_utils.log_append_processingtime(summary_path, time_record_full)
 

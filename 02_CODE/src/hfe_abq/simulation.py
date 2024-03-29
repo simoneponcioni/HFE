@@ -1,7 +1,23 @@
+import logging
 import os
 import sys
 import traceback
 from pathlib import Path
+
+LOGGING_NAME = "HFE-ACCURATE"
+logger = logging.getLogger(LOGGING_NAME)
+logger.setLevel(logging.INFO)
+handler = logging.FileHandler("./pipeline_runner.log")
+handler.setLevel(logging.INFO)
+
+console_handler = logging.StreamHandler()
+console_handler.setLevel(logging.INFO)
+formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+handler.setFormatter(formatter)
+console_handler.setFormatter(formatter)
+
+logger.addHandler(handler)
+logger.addHandler(console_handler)
 
 
 def simulate_loadcase(cfg, sample: str, inputfile: str, umat: str, loadcase: str):
@@ -39,14 +55,14 @@ def simulate_loadcase(cfg, sample: str, inputfile: str, umat: str, loadcase: str
         "%s job=%s inp=%s cpus=%d memory=%d user=%s scratch=%s ask_delete=OFF -interactive"
         % (ABAQUS, job, inputfile, NPROCS, RAM, umat, SCRATCH)
     )
-    print(command)
+    logger.info(command)
     try:
         os.system(command)
     except Exception as e:
-        print("Simulation of FZ_MAX loadcase resulted in error")
-        print(e)
-        print(traceback.format_exc())
-        print(sys.stderr)
+        logger.error("Simulation of FZ_MAX loadcase resulted in error")
+        logger.error(e)
+        logger.error(traceback.format_exc())
+        logger.error(sys.stderr)
         pass
     os.chdir(basepath)
     return None

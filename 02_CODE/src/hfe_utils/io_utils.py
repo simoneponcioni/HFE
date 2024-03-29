@@ -10,18 +10,6 @@ from omegaconf import OmegaConf
 
 LOGGING_NAME = "HFE-ACCURATE"
 logger = logging.getLogger(LOGGING_NAME)
-logger.setLevel(logging.INFO)
-handler = logging.FileHandler("./pipeline_runner.log")
-handler.setLevel(logging.INFO)
-
-console_handler = logging.StreamHandler()
-console_handler.setLevel(logging.INFO)
-formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-handler.setFormatter(formatter)
-console_handler.setFormatter(formatter)
-
-logger.addHandler(handler)
-logger.addHandler(console_handler)
 
 
 def ext(filename, new_ext):

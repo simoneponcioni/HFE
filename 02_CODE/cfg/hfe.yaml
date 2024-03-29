@@ -16,7 +16,7 @@ hydra:
   mode: MULTIRUN
   sweeper:
     params:
-      simulations.grayscale_filenames: C0003096, C0003097, C0003099, C0003101, C0003103, C0003108, C0003116
+      simulations.grayscale_filenames: C0003101, C0003108 
 
 # NOT WORKING:
   # - C0003102 #! needs to be exported from scanner

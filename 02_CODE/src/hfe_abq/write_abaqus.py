@@ -256,8 +256,8 @@ class AbaqusWriter:
         for key, value in abq_dict.items():
             # orientation += f"*Orientation, name=Orient-{key}, SYSTEM=RECTANGULAR, DEFINITION=COORDINATES\n"
             orientation += f"*Orientation, name=Orient-{key}\n"
-            ori = self._set_orientation(value["mm"], value["centroid"])
-            # ori = self._set_orientation_new(value["mm"])
+            # ori = self._set_orientation(value["mm"], value["centroid"])
+            ori = self._set_orientation_new(value["mm"])
             orientation += ", ".join(map(str, ori))
             orientation += "\n"
             # orientation += "1, 0\n"

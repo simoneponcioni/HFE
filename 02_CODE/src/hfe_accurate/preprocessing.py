@@ -440,7 +440,8 @@ def msl_triangulation(cfg, SEG_array, cortmask, trabmask, spacing, tolerance):
     ORTHOTROPIC_CORTEX = cfg.homogenization.orthotropic_cortex
     if ORTHOTROPIC_CORTEX is True:
         # mask SEG_vtk with trabmask with boolean
-        SEG_array = np.where(trabmask, SEG_array, 0)
+        # SEG_array = np.where(trabmask, SEG_array, 0)
+        pass
 
     # * 0/6 Input sanity check
     try:

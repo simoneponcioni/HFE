@@ -68,8 +68,6 @@ def pipeline_hfe(cfg, folder_id, grayscale_filename):
 
     # Sets paths
     workdir = cfg.socket_paths.workdir
-    origaimdir = Path(workdir, cfg.paths.origaimdir)
-    aimdir = Path(workdir, cfg.paths.aimdir)
     feadir = Path(workdir, cfg.paths.feadir)
     umat = Path(workdir, cfg.abaqus.umat)
     sumdir = Path(workdir, cfg.paths.sumdir)

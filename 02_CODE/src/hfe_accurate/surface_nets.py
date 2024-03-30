@@ -1,3 +1,4 @@
+import datetime
 import logging
 from typing import Literal
 
@@ -88,8 +89,8 @@ def surface_nets(
         mesh = mesh.smooth_taubin(n_iter=smoothing_num_iterations, pass_band=0.5)
 
     # save mesh for debugging
-    # timenow = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    # mesh.save(f"mesh_{timenow}.vtk")
+    timenow = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    mesh.save(f"mesh_{timenow}.vtk")
 
     logger.info("1/6 STL file creation finished")
     return mesh

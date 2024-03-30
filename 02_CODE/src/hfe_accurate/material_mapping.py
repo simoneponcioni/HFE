@@ -594,7 +594,7 @@ def cai_evalues():
     return [E1, E2, E3]
 
 
-def __compute_eval_evect_projection__(MSL_kernel_list_cort, elms, BVcortseg, _evect):
+def __compute_eval_evect_projection__(elms, _evect):
     # Fabric projection for cortical bone
     evals = np.zeros((len(elms), 3))
     evects = np.zeros((len(elms), 3, 3))
@@ -625,7 +625,7 @@ def __compute_eval_evect__(MSL_kernel_list, elms, BVseg, projection=True):
     MSL_kernel_list:    List with areaweighted dyadic products of triangulation, after kernel homogenization
     BVseg               bone volume from segmentation for specific bone phase
     projection          Defines if projection of global Z on plane of MSL (used for cortical phase to have main
-                        orientation along cortical shel
+                        orientation along cortical shell
 
     Returns
     -------
@@ -650,7 +650,7 @@ def __compute_eval_evect__(MSL_kernel_list, elms, BVseg, projection=True):
             evalue, evect = scipy.linalg.eig(MSL)
 
         except Exception as e:
-            logger.exception(
+            print(
                 f"Exception n. {ee}: {e}\nMSL_kernel_list[i]:\n{MSL_kernel_list[idx]}\nBVseg[i]:\n{BVseg[i]}\n"
             )
             ee += 1
@@ -663,17 +663,26 @@ def __compute_eval_evect__(MSL_kernel_list, elms, BVseg, projection=True):
             evect = np.array(evect)
 
         _argsort = evalue.argsort()  # order eigenvalues 0=min, 1=mid, 2=max
-        # _argsort = evalue.argsort()[::-1]  # order eigenvalues 2=max, 1=mid, 0=min
-        _argsort = evalue.argsort()  # order eigenvalues 0=min, 1=mid, 2=max
         evalue = evalue[_argsort]
         evect = evect[:, _argsort]
         evalue = np.array([e.real for e in evalue])
         evect = np.array(evect)
 
+        if projection == True:
+            # Fabric projection for cortical bone
+            # vectoronplane requires inputs evect max, mid, min, so evect[2], evect[1], evect[0]
+            evect[:, 0], evect[:, 1], evect[:, 2] = vectoronplane(
+                evect[:, 2], evect[:, 1], evect[:, 0], np.array([0.0, 0.0, 1.0])
+            )
+            if np.isnan(np.sum(np.array(evect))):
+                # return 3x3 identity matrix
+                _, evect = compute_isoFAB()
+            evalue = cai_evalues()  # Cai et al, Acta Biomater. 2019
+
         _lim = float(2.5)
         if np.any(np.array(evalue) > _lim):
             # raise ValueError(f"evalue > {_lim} in element {i}")
-            logger.exception(f"Exception n. {eee}:\nevalue > {_lim} in element {i}")
+            print(f"Exception n. {eee}:\nevalue > {_lim} in element {i}")
             eee += 1
             evalue, evect = compute_isoFAB()
             evalue = np.array([e.real for e in evalue])
@@ -731,11 +740,29 @@ def material_mapping_spline(
         MSL_kernel_list_trab = bone["MSL_kernel_list_trab"]
 
     # * Material mapping
+    RHOc = {}
+    # RHOc_corrected = {}  # RHO corrected by PBV (RHO * PHI)
+    RHOt = {}
+    # RHOt_corrected = {}  # RHO corrected by PBV (RHO * PHI)
+    RHOc_FE = {}  # RHO of only FE element (ROI = FEelement)
+    RHOt_FE = {}  # RHO of only FE element (ROI = FEelement)
+    PHIc = {}
+    PHIt = {}
+    mm = {}
+    m = {}
+    # BVTVcortseg = {}
+    # BVTVtrabseg = {}
+    BVTVcortseg_elem = {}
+    BVTVtrabseg_elem = {}
+    cogs = {}
+    DOA = {}
+
     cog_real_cort = bone["elms_centroids_cort"]
     cog_real_trab = bone["elms_centroids_trab"]
 
     # # * Cortical compartment
-    #! Updating by using BVTVscaled
+    #! As we are basing it on BMD and not SEG, SEG_correction=False in cortical compartment!
+    #! (POS, 21.03.2024)
     phi_cort, rho_cort, rho_fe_cort = __material_mapping__(
         cog_real_cort,
         spacing,
@@ -787,6 +814,20 @@ def material_mapping_spline(
         BVTVtrabseg_elem_s = __computePHI__(ROI_mask_s)
         BVTVtrabseg_elem[i] = BVTVtrabseg_elem_s
 
+    BVTVcortseg = np.divide(
+        BVTVcortseg_elem,
+        PHIc,
+        out=np.zeros(BVTVcortseg_elem.shape, dtype=float),
+        where=PHIc != 0,
+    )
+
+    BVTVtrabseg = np.divide(
+        BVTVtrabseg_elem,
+        PHIt,
+        out=np.zeros(BVTVtrabseg_elem.shape, dtype=float),
+        where=PHIt != 0,
+    )
+
     BVcortseg = np.array(
         [
             BVTVcortseg_elem[i] * bone["elms_vol_cort"][i]
@@ -833,9 +874,7 @@ def material_mapping_spline(
     if fabric_type == "local":
         if cfg.homogenization.orthotropic_cortex is True:
             m_cort, mm_cort = __compute_eval_evect_projection__(
-                MSL_kernel_list_cort,
                 elms_cort,
-                BVcortseg,
                 bone["cort_projection_evect"],
             )
         else:

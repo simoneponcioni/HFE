@@ -2,6 +2,7 @@
 *.AIM
 *.png
 *.npy
+*.vtk
 
 outputs/
 00_ORIGAIM/

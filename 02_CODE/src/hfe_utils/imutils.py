@@ -294,27 +294,31 @@ def read_aim(name, filenames, bone, lock):
 
     print("\n ... read file: " + name)
 
-    Spacing = bone["Spacing"]
-    IMG_vtk = AIMreader(filenames[name + "name"], Spacing)[0]
+    spacing = bone["Spacing"]
+    IMG_vtk = AIMreader(filenames[name + "name"], spacing)[0]
     IMG_array = vtk2numpy(IMG_vtk)
 
     # pad image to avoid having non-zero values at the boundary
     IMG_sitk = sitk.GetImageFromArray(IMG_array)
     IMG_pad = pad_image(IMG_sitk, iso_pad_size=10)
     IMG_pad = sitk.Flip(IMG_pad, [True, False, False])
+    
+    #! ONLY FOR C0003114
+    # IMG_pad = IMG_pad[:-35, :, :]
+    # print(IMG_pad.GetSize())
 
     IMG_array = sitk.GetArrayFromImage(IMG_pad)
     IMG_array = np.flip(IMG_array, 1)
     if name == "SEG":
         IMG_array[IMG_array == 127] = 2
         IMG_array[IMG_array == 126] = 1
-        IMG_array = IMG_array.astype(int)
         with lock:
             bone[name + "_array"] = IMG_array
     else:
         with lock:
             bone[name + "_array"] = IMG_array
 
+    print(f'{name} shape: {IMG_array.shape}')
     return bone
 
 

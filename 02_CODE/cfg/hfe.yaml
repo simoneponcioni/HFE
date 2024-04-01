@@ -16,8 +16,9 @@ hydra:
   mode: MULTIRUN
   sweeper:
     params:
-      simulations.grayscale_filenames: C0003118, C0003112
+      simulations.grayscale_filenames: C0003096, C0003097, C0003098, C0003099, C0003102, C0003114, C0003115, C0003118
 
+      # C0003096, C0003115
 # NOT WORKING:
   # - C0003102 #! needs to be exported from scanner
   # - C0003114 #! removed 35 slices at epyphisis
@@ -45,7 +46,7 @@ homogenization:
   STL_tolerance: 0.2
   ROI_kernel_size_cort: 5
   ROI_kernel_size_trab: 5
-  ROI_BVTV_size_cort: 1.3453        # Diameter of sphere with same volume as FEelement (3./4*(Volume_FEelement/math.pi))**(1./3)*2
+  ROI_BVTV_size_cort: 4.0        # Diameter of sphere with same volume as FEelement (3./4*(Volume_FEelement/math.pi))**(1./3)*2
   ROI_BVTV_size_trab: 4.0           # Diameter of Arias Moreno et al. 2019
   isotropic_cortex: False           # Cortex fabric isotropic, or projected on surface (requires preprocessing.compute_local_MSL(onlytrab=True))
   orthotropic_cortex: True         # Cortex fabric orthotropic, managed in preprocessing.msl_triangulation()

@@ -16,9 +16,7 @@ hydra:
   mode: MULTIRUN
   sweeper:
     params:
-      simulations.grayscale_filenames: C0003096, C0003097, C0003098, C0003099, C0003102, C0003114, C0003115, C0003118
-
-      # C0003096, C0003115
+      simulations.grayscale_filenames: C0003114, C0003118, C0003094, C0003097, C0003098
 # NOT WORKING:
   # - C0003102 #! needs to be exported from scanner
   # - C0003114 #! removed 35 slices at epyphisis
@@ -53,7 +51,7 @@ homogenization:
 
 loadcase:
   full_nonlinear_loadcases: False   # [True/False] compute non-linear loadcases [FX, FY, MX, MY, MZ]
-  BC_mode: 0                        # 0: all DOF fixed / 2: two in plane fixed / 5: all DOF free
+  BC_mode: 5                        # 0: all DOF fixed / 2: two in plane fixed / 5: all DOF free
   control: displacement             # [force/displacement] describes the loading boundary conditions
   start_step_size: 0.2
   time_for_displacement: 1

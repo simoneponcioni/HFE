@@ -74,7 +74,6 @@ def pipeline_hfe(cfg, folder_id, grayscale_filename):
     sumdir.mkdir(parents=True, exist_ok=True)
     feadir.mkdir(parents=True, exist_ok=True)
 
-    # sample = grayscale_filename  # TODO: refactoring this
     current_version = cfg.version.current_version
 
     sampledir = Path(feadir) / cfg.simulations.folder_id[grayscale_filename]

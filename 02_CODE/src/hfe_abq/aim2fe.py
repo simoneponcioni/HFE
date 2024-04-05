@@ -20,6 +20,7 @@ import hfe_accurate.material_mapping as material_mapping
 import hfe_accurate.preprocessing as preprocessing
 import hfe_utils.imutils as imutils
 import hfe_utils.io_utils as io_utils
+import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 import SimpleITK as sitk
@@ -29,6 +30,9 @@ from pyhexspline.spline_mesher import HexMesh  # type: ignore
 
 LOGGING_NAME = "HFE-ACCURATE"
 logger = logging.getLogger(LOGGING_NAME)
+
+
+matplotlib.use("TkAgg")
 
 
 def _helper_store_bone_dict(bone: dict, basepath: Path, _mesh: str):
@@ -77,8 +81,8 @@ def _helper_store_bone_dict(bone: dict, basepath: Path, _mesh: str):
         pickle.dump(MSL_kernel_list_cort, k)
 
     MSL_kernel_list_trab = bone["MSL_kernel_list_trab"]
-    with open(basepath / f"{_mesh}_MSL_kernel_list_trab.pkl", "wb") as l:
-        pickle.dump(MSL_kernel_list_trab, l)
+    with open(basepath / f"{_mesh}_MSL_kernel_list_trab.pkl", "wb") as file_handler:
+        pickle.dump(MSL_kernel_list_trab, file_handler)
 
     MESH = bone["MESH"]
     with open(basepath / f"{_mesh}_MESH.pkl", "wb") as m:
@@ -191,10 +195,20 @@ def aim2fe_psl(cfg, sample):
 
     if cfg.mesher.meshing == "spline":
         cort_mask_np = bone["CORTMASK_array"]
-        sitk_image = sitk.GetImageFromArray(cort_mask_np)
-        sitk_image = sitk.PermuteAxes(sitk_image, [2, 1, 0])
-        sitk_image = sitk.Flip(sitk_image, [False, True, False])
-        sitk_image.SetSpacing(bone["Spacing"])
+        trab_mask_np = bone["TRABMASK_array"]
+        masks = [cort_mask_np, trab_mask_np]
+        mask_names = ["CORTMASK", "TRABMASK"]
+        for mask, mask_name in zip(masks, mask_names):
+            sitk_image = sitk.GetImageFromArray(mask)
+            sitk_image = sitk.PermuteAxes(sitk_image, [2, 1, 0])
+            sitk_image = sitk.Flip(sitk_image, [False, True, False])
+            sitk_image.SetSpacing(bone["Spacing"])
+            cortmask_path = (
+                Path(cfg.paths.aimdir)
+                / cfg.simulations.folder_id[sample]
+                / f"{sample}_{mask_name}.mhd"
+            )
+            sitk.WriteImage(sitk_image, cortmask_path)
 
         # append sample filename to config_mesh["img_settings"]
         sample_n = str(sample) + f"sweep_{cfg.meshing_settings.sweep_factor}"
@@ -252,9 +266,9 @@ def aim2fe_psl(cfg, sample):
         raise ValueError("Fabric type not recognised")
 
     if cfg.mesher.meshing == "spline":
-        inp_filename = filenames["INPname"]
         # TODO: reactivate if you want pickled files (POS, 28.02.2024)
         # mesh_type = cfg.mesher.meshing
+        # inp_filename = filenames["INPname"]
         # basepath = Path(inp_filename).parent
         # _helper_store_bone_dict(bone, basepath, _mesh=mesh_type)
         (

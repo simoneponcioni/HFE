@@ -7,8 +7,9 @@ from pathlib import Path
 from time import time
 
 import hfe_utils.imutils as utils
+import matplotlib
 
-# matplotlib.use("TkAgg")
+matplotlib.use("TkAgg")
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy  # type: ignore
@@ -262,15 +263,15 @@ def __material_mapping__(
         # rho_fe[i] = rho_fe_s
         rho_fe[i] = 1  # ! adapt this
 
-    plt.figure(figsize=(10, 10))
-    plt.hist(phi.flatten(), bins=100)
-    plt.savefig(f"phi_{compartment_s}_new.png")
-    plt.close()
+    # plt.figure(figsize=(10, 10))
+    # plt.hist(phi.flatten(), bins=100)
+    # plt.savefig(f"phi_{compartment_s}_new.png")
+    # plt.close()
 
-    plt.figure(figsize=(10, 10))
-    plt.hist(rho.flatten(), bins=100)
-    plt.savefig(f"rho_{compartment_s}_new.png")
-    plt.close()
+    # plt.figure(figsize=(10, 10))
+    # plt.hist(rho.flatten(), bins=100)
+    # plt.savefig(f"rho_{compartment_s}_new.png")
+    # plt.close()
 
     timeend = time()
     elaps_time = timeend - timestart

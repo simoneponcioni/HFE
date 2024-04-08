@@ -1,4 +1,7 @@
+from pathlib import Path
+
 import numpy as np
+from hfe_utils.read_mech_params import parse_and_calculate_stiffness_yield_force
 
 
 def OR_ult_load_disp(optim: dict, loadcase: str) -> dict:
@@ -63,7 +66,9 @@ def OR_ult_load_disp(optim: dict, loadcase: str) -> dict:
     return optim
 
 
-def compute_optim_report_variables(optim: dict):
+def compute_optim_report_variables(
+    optim: dict, path2dat: Path, thickness_stacks: float
+):
 
     optim = OR_ult_load_disp(optim, "FZ_MAX")
 
@@ -87,6 +92,11 @@ def compute_optim_report_variables(optim: dict):
     max_force = force_FZ_MAX[max_index, 2]
     disp_at_max_force = disp_FZ_MAX[max_index, 2]
 
+    _, yield_force, yield_disp = parse_and_calculate_stiffness_yield_force(
+        path2dat, thickness=thickness_stacks
+    )
+    optim["yield_force_FZ_MAX"] = yield_force
+    optim["yield_disp_FZ_MAX"] = yield_disp
     optim["stiffness_FZ_MAX"] = stiffness
     optim["max_force_FZ_MAX"] = max_force
     optim["disp_at_max_force_FZ_MAX"] = disp_at_max_force

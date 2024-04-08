@@ -9,7 +9,10 @@ from time import time
 import hfe_utils.imutils as utils
 import matplotlib
 
-matplotlib.use("TkAgg")
+try:
+    matplotlib.use("TkAgg")
+except ImportError:
+    pass
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy  # type: ignore

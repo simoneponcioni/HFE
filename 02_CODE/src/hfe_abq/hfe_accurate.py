@@ -36,15 +36,14 @@ logger = logging.getLogger(LOGGING_NAME)
 
 
 def pipeline_hfe(cfg, folder_id, grayscale_filename):
-    """
     # TODO: reactivate for sensitivity analysis
     n_sim = int(10)  # has to match sweep in config
-    # min = 3, 5, 1, 7
+    # min = 5, 5, 2, 7
     # max = 20, 50, 10, 50 did not work, reducing to 20, 40, 10, 40
-    n_elms_longitudinal = np.linspace(5, 15, n_sim, dtype=int)
-    n_elms_transverse_trab = np.linspace(5, 30, n_sim, dtype=int)
+    n_elms_longitudinal = np.linspace(5, 20, n_sim, dtype=int)
+    n_elms_transverse_trab = np.linspace(5, 40, n_sim, dtype=int)
     n_elms_transverse_cort = np.linspace(2, 8, n_sim, dtype=int)
-    n_radial = np.linspace(10, 40, n_sim, dtype=int)
+    n_radial = np.linspace(7, 40, n_sim, dtype=int)
 
     # update meshing settings with sweep factor for sensitivity analysis
     sweep = cfg.meshing_settings.sweep_factor
@@ -58,7 +57,6 @@ def pipeline_hfe(cfg, folder_id, grayscale_filename):
         n_elms_transverse_cort[sweep - 1].item()
     )
     cfg.meshing_settings.n_elms_radial = int(n_radial[sweep - 1].item())
-    """
 
     # timing
     time_record = {}
@@ -124,7 +122,11 @@ def pipeline_hfe(cfg, folder_id, grayscale_filename):
     optim["processing_time"] = end_sample - start_sample
     time_record[grayscale_filename] = end_sample - start_sample
 
-    optim = por.compute_optim_report_variables(optim)
+    path2dat = Path(inputfile).parent / (grayscale_filename + "_" + cfg.version.current_version[0:2] + ".dat")
+    thickness = max(val[2] for val in bone["nodes"].values()) - min(
+        val[2] for val in bone["nodes"].values()
+    )
+    optim = por.compute_optim_report_variables(optim, path2dat, thickness)
     bone = por.compute_bone_report_variables_no_psl(bone)
 
     # only for sensitivity analysis

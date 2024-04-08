@@ -246,6 +246,13 @@ def aim2fe_psl(cfg, sample):
         bone["bnds_top"] = bnds_top
         bone["reference_point_coord"] = reference_point_coord
 
+        # ! only for testing, remove later
+        # pickle centroids_cort and centroids_trab
+        with open(f"centroids_cort_{sample}.pkl", "wb") as f:
+            pickle.dump(centroids_cort, f)
+        with open(f"centroids_trab_{sample}.pkl", "wb") as f:
+            pickle.dump(centroids_trab, f)
+
         bone["elsets"] = []
         CoarseFactor = bone["FEelSize"][0] / bone["Spacing"][0]
         BVTVscaled_shape = bone["BVTVscaled"].shape

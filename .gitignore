@@ -3,6 +3,8 @@
 *.png
 *.npy
 *.vtk
+*.pkl
+
 
 outputs/
 00_ORIGAIM/

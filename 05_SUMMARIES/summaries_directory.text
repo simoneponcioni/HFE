@@ -1,0 +1,4 @@
+The summary directory is a directory that contains the results of the batch processing. It is structured as follows:
+
+- nn_data_summary.csv
+- nn_processing_time_summary.csv

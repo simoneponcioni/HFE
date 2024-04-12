@@ -1,0 +1,12 @@
+The 01_DATA directory will store processing data, such as:
+
+|
+|__ STUDY_UID_001
+        |__ BMD.png                     # 2D image of the BMD map
+        |__ CORTMASK.png                # 2D image of the cortical mask
+        |__ SEG.png                     # 2D image of the segmentation
+        |__ TRABMASK.png                # 2D image of the trabecular mask
+        |__ C000000n_V_n_FABmax.vtk     # ASCII DATASET UNSTRUCTURED_GRID - Fabric tensor, max eigenvector
+        |__ C000000n_V_n_FABmid.vtk     # ASCII DATASET UNSTRUCTURED_GRID - Fabric tensor, mid eigenvector
+        |__ C000000n_V_n_FABmin.vtk     # ASCII DATASET UNSTRUCTURED_GRID - Fabric tensor, min eigenvector
+...        

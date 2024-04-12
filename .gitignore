@@ -4,14 +4,14 @@
 *.npy
 *.vtk
 *.pkl
-
+*.mhd
+*.raw
+*.msh
+*.stl
+*.txt
+*.csv
 
 outputs/
-00_ORIGAIM/
-01_DATA/
-03_MESH/
-04_SIMULATIONS/
-05_SUMMARIES/
 99_TEMP/
 
 multirun/

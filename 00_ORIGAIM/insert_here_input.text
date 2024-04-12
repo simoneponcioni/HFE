@@ -1,0 +1,14 @@
+Insert here the input images with the following structure:
+
+|
+|__ STUDY_UID_001
+        |__ C0000001.AIM
+        |__ C0000001_SEG_UNCOMP.AIM
+        |__ C0000001_CORT_MASK_UNCOMP.AIM
+        |__ C0000001_TRAB_MASK_UNCOMP.AIM
+...        
+|__ STUDY_UID_nnn
+        |__ C000000n.AIM
+        |__ C000000n_SEG_UNCOMP.AIM
+        |__ C000000n_CORT_MASK_UNCOMP.AIM
+        |__ C000000n_TRAB_MASK_UNCOMP.AIM

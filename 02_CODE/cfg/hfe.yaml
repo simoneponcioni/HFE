@@ -6,17 +6,17 @@ defaults:
   - _self_
 
 # * Mesh sensitivity analysis settings (in conjunction with parameters in hfe_accurate.py)
-hydra:
-    mode: MULTIRUN
-    sweeper:
-        params:
-          meshing_settings.sweep_factor: range(1, 10)
-
 # hydra:
-#   mode: MULTIRUN
-#   sweeper:
-#     params:
-#       simulations.grayscale_filenames: C0003111
+#     mode: MULTIRUN
+#     sweeper:
+#         params:
+#           meshing_settings.sweep_factor: range(1, 10)
+
+hydra:
+  mode: MULTIRUN
+  sweeper:
+    params:
+      simulations.grayscale_filenames: C0003105, C0003102
 
 # NOT WORKING:
   # - C0003102 #! needs to be exported from scanner

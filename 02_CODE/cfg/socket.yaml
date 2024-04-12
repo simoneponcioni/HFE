@@ -5,7 +5,7 @@ solver:
 
 socket_paths: # paths that are socket specific (you might need to change them)
   # workdir: /Users/msb/Documents/01_PHD/03_Methods/CLEAN-HFE-ACCURATE          # simone-macbook
-  # workdir: /home/simoneponcioni/Documents/01_PHD/03_Methods/HFE               # simone-kubuntu
-  # scratchdir: /home/simoneponcioni/.SCRATCH                                   # simone-kubuntu
-  workdir: /home/sp20q110/HFE                                                   # monterosa (Abaqus 2021)
-  scratchdir: /home/sp20q110/.SCRATCH                                           # monterosa (Abaqus 2021)
+  workdir: /home/simoneponcioni/Documents/01_PHD/03_Methods/HFE               # simone-kubuntu
+  scratchdir: /home/simoneponcioni/.SCRATCH                                   # simone-kubuntu
+  # workdir: /home/sp20q110/HFE                                                   # monterosa (Abaqus 2021)
+  # scratchdir: /home/sp20q110/.SCRATCH                                           # monterosa (Abaqus 2021)

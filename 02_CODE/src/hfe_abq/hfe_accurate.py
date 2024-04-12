@@ -36,27 +36,27 @@ logger = logging.getLogger(LOGGING_NAME)
 
 
 def pipeline_hfe(cfg, folder_id, grayscale_filename):
-    # TODO: reactivate for sensitivity analysis
-    n_sim = int(10)  # has to match sweep in config
-    # min = 5, 5, 2, 7
-    # max = 20, 50, 10, 50 did not work, reducing to 20, 40, 10, 40
-    n_elms_longitudinal = np.linspace(5, 20, n_sim, dtype=int)
-    n_elms_transverse_trab = np.linspace(5, 40, n_sim, dtype=int)
-    n_elms_transverse_cort = np.linspace(2, 8, n_sim, dtype=int)
-    n_radial = np.linspace(7, 40, n_sim, dtype=int)
+    # # TODO: reactivate for sensitivity analysis
+    # n_sim = int(10)  # has to match sweep in config
+    # # min = 5, 5, 2, 7
+    # # max = 20, 50, 10, 50 did not work, reducing to 20, 40, 10, 40
+    # n_elms_longitudinal = np.linspace(5, 20, n_sim, dtype=int)
+    # n_elms_transverse_trab = np.linspace(5, 40, n_sim, dtype=int)
+    # n_elms_transverse_cort = np.linspace(2, 8, n_sim, dtype=int)
+    # n_radial = np.linspace(7, 40, n_sim, dtype=int)
 
-    # update meshing settings with sweep factor for sensitivity analysis
-    sweep = cfg.meshing_settings.sweep_factor
-    cfg.meshing_settings.n_elms_longitudinal = int(
-        n_elms_longitudinal[sweep - 1].item()
-    )
-    cfg.meshing_settings.n_elms_transverse_trab = int(
-        n_elms_transverse_trab[sweep - 1].item()
-    )
-    cfg.meshing_settings.n_elms_transverse_cort = int(
-        n_elms_transverse_cort[sweep - 1].item()
-    )
-    cfg.meshing_settings.n_elms_radial = int(n_radial[sweep - 1].item())
+    # # update meshing settings with sweep factor for sensitivity analysis
+    # sweep = cfg.meshing_settings.sweep_factor
+    # cfg.meshing_settings.n_elms_longitudinal = int(
+    #     n_elms_longitudinal[sweep - 1].item()
+    # )
+    # cfg.meshing_settings.n_elms_transverse_trab = int(
+    #     n_elms_transverse_trab[sweep - 1].item()
+    # )
+    # cfg.meshing_settings.n_elms_transverse_cort = int(
+    #     n_elms_transverse_cort[sweep - 1].item()
+    # )
+    # cfg.meshing_settings.n_elms_radial = int(n_radial[sweep - 1].item())
 
     # timing
     time_record = {}
@@ -122,7 +122,9 @@ def pipeline_hfe(cfg, folder_id, grayscale_filename):
     optim["processing_time"] = end_sample - start_sample
     time_record[grayscale_filename] = end_sample - start_sample
 
-    path2dat = Path(inputfile).parent / (grayscale_filename + "_" + cfg.version.current_version[0:2] + ".dat")
+    path2dat = Path(inputfile).parent / (
+        grayscale_filename + "_" + cfg.version.current_version[0:2] + ".dat"
+    )
     thickness = max(val[2] for val in bone["nodes"].values()) - min(
         val[2] for val in bone["nodes"].values()
     )

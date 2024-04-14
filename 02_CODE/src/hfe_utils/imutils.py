@@ -304,8 +304,11 @@ def read_aim(name, filenames, bone, lock):
     IMG_pad = sitk.Flip(IMG_pad, [True, False, False])
 
     #! ONLY FOR C0003114
-    # IMG_pad = IMG_pad[:-35, :, :]
-    # print(IMG_pad.GetSize())
+    if "C0003114" in filenames[name + "name"]:
+        IMG_pad = IMG_pad[:-35, :, :]
+        print(IMG_pad.GetSize())
+    else:
+        pass
 
     IMG_array = sitk.GetArrayFromImage(IMG_pad)
     IMG_array = np.flip(IMG_array, 1)

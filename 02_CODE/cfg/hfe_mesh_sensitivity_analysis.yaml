@@ -5,14 +5,22 @@ defaults:
   - mesh
   - _self_
 
+# * Mesh sensitivity analysis settings (in conjunction with parameters in hfe_accurate.py)
 hydra:
-  mode: MULTIRUN
-  sweeper:
-    params:
-      simulations.grayscale_filenames: C0003091, C0003093, C0003094, C0003095, C0003096, C0003097, C0003098, C0003099, C0003101, C0003103, C0003104, C0003105, C0003106, C0003108, C0003109, C0003110, C0003111, C0003112, C0003113, C0003114, C0003115, C0003116, C0003117, C0003118
+    mode: MULTIRUN
+    sweeper:
+        params:
+          meshing_settings.sweep_factor: range(1, 5)
+
+# hydra:
+#   mode: MULTIRUN
+#   sweeper:
+#     params:
+#       simulations.grayscale_filenames: C0003111
 
 # NOT WORKING:
   # - C0003102 #! needs to be exported from scanner
+  # - C0003114 #! removed 35 slices at epyphisis
 
 mesher:
   meshing: spline                   # or 'full-block'

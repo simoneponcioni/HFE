@@ -1,0 +1,9 @@
+The 03_MESH directory will include the mesh stored in the following structure and formats:
+
+|
+|__ C000000n
+        |__ C000000n_gmsh.log       # Gmsh log file
+        |__ C000000n.inp            # Abaqus input file (only the mesh: nodes, elements, and sets)
+        |__ C000000n.msh            # Gmsh mesh file
+        |__ C000000n.vtk            # VTK ASCII DATASET UNSTRUCTURED_GRID of the mesh
+...        

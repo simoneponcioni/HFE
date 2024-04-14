@@ -1,0 +1,12 @@
+The simulation directory contains abaqus-related simulation files. The directory is structured as follows:
+   
+|__ STUDY_UID_nnn
+        |__ C000000n.com        # Abaqus command file
+        |__ C000000n.dat        # Abaqus data file
+        |__ C000000n.msg        # Abaqus message file
+        |__ C000000n.odb        # Abaqus output database file
+        |__ C000000n.prt        # Abaqus part file
+        |__ C000000n.sta        # Abaqus status file
+        |__ C000000n.txt        # Results extracted from the Abaqus output database file (usually at the Reference Point)
+        |__ C000000n_V_n.inp    # Abaqus input file
+...

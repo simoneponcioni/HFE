@@ -2,7 +2,6 @@ import copy
 import logging
 import pickle
 import sys
-import warnings
 from pathlib import Path
 from time import time
 
@@ -27,18 +26,6 @@ logger.setLevel(logging.INFO)
 # flake8: noqa: E501
 
 
-def _dump_list(savedir, files_to_save, file_name):
-    """
-    This function saves a list of files to a given directory as pickle.
-    Can be deleted after testing.
-    POS, 04.08.2023
-    """
-    for i, file in enumerate(files_to_save):
-        file_path = Path(savedir) / (str(file_name[i]) + "_original.pkl")
-        with open(file_path, "wb") as f:
-            pickle.dump(file, f)
-
-
 def calculate_bvtv(seg_array, mask_array, spacing, VOI_mm, cog):
     """
     POS, 06.02.2024
@@ -60,6 +47,7 @@ def calculate_bvtv(seg_array, mask_array, spacing, VOI_mm, cog):
     """
     VOI = VOI_mm / spacing[0]
     x, y, z = cog / spacing
+    semisizes_s = (float(VOI / 2),) * 3
 
     def __compute_roi_indices__():
         """
@@ -100,8 +88,9 @@ def calculate_bvtv(seg_array, mask_array, spacing, VOI_mm, cog):
         PHI (float): The PHI value.
         """
         try:
-            phi = float(np.count_nonzero(ROI)) / ROI.size
-        except ZeroDivisionError:
+            phi = float(np.count_nonzero(ROI == 1) / ROI.size)
+        except ZeroDivisionError as e:
+            print(e)
             phi = 0.0
 
         # check for meaningful output
@@ -124,7 +113,7 @@ def calculate_bvtv(seg_array, mask_array, spacing, VOI_mm, cog):
         tuple: A tuple containing the PHI and rho_s values.
         """
 
-        def __generate_sphere_array__(shape, radius, position):
+        def __generate_sphere_array__(shape, position):
             """
             Generate a 3D array with a sphere of given radius and position.
 
@@ -139,13 +128,11 @@ def calculate_bvtv(seg_array, mask_array, spacing, VOI_mm, cog):
             Returns:
             np.array: A 3D numpy array of the specified shape.
             """
-            semisizes = (float(radius),) * 3
-            grid = [slice(-x0, dim - x0) for x0, dim in zip(position, shape)]
-            position = np.ogrid[grid]
-            arr = np.zeros(np.asarray(shape).astype(int), dtype=float)
-            for x_i, semisize in zip(position, semisizes):
-                arr += np.abs(x_i / semisize) ** 2
-            return (arr <= 1.0).astype("int")
+            grid = np.ogrid[[slice(-x0, dim - x0) for x0, dim in zip(position, shape)]]
+            arr = np.zeros(shape, dtype=float)
+            for x_i, semisize in zip(grid, semisizes_s):
+                arr += (x_i / semisize) ** 2
+            return (arr <= 1.0).astype(int)
 
         x_start, x_end, y_start, y_end, z_start, z_end = __compute_roi_indices__()
 
@@ -157,21 +144,18 @@ def calculate_bvtv(seg_array, mask_array, spacing, VOI_mm, cog):
         if phi_s > 0.0:
             ROI_mask_sphere = __generate_sphere_array__(
                 shape=np.shape(ROI_seg),
-                radius=VOI / 2,
-                position=[
+                position=tuple(
                     cog_i - start_i
                     for cog_i, start_i in zip([x, y, z], [x_start, y_start, z_start])
-                ],
+                ),
             )
 
             ROI_mask_sphere_mask = np.multiply(ROI_mask_sphere, ROI_mask)
             ROI_sphere_seg = np.multiply(ROI_mask_sphere_mask, ROI_seg)
-            with warnings.catch_warnings():
-                warnings.filterwarnings("error")
-                try:
-                    rho_s = np.sum(ROI_sphere_seg) / np.sum(ROI_mask_sphere_mask)
-                except Warning as e:
-                    rho_s = 0.01
+            try:
+                rho_s = np.sum(ROI_sphere_seg) / np.sum(ROI_mask_sphere_mask)
+            except ZeroDivisionError:
+                rho_s = 0.01
 
         else:
             # Ensure minimum bvtv, added by POS, 14.01.2024
@@ -180,30 +164,6 @@ def calculate_bvtv(seg_array, mask_array, spacing, VOI_mm, cog):
         return max(0.01, min(1.0, phi_s)), max(0.01, min(1.0, rho_s))
 
     return __compute_bvtv__()
-
-
-def generate_sphere_array(shape, radius, position):
-    """
-    Generate a 3D array with a sphere of given radius and position.
-
-    The function creates a 3D grid of the specified shape, and then calculates for each point in the grid
-    if it's inside the sphere (represented as 1) or outside the sphere (represented as 0).
-
-    Parameters:
-    shape (tuple): The shape of the 3D array to be generated.
-    radius (float): The radius of the sphere.
-    position (tuple): The position of the center of the sphere.
-
-    Returns:
-    np.array: A 3D numpy array of the specified shape.
-    """
-    semisizes = (float(radius),) * 3
-    grid = [slice(-x0, dim - x0) for x0, dim in zip(position, shape)]
-    position = np.ogrid[grid]
-    arr = np.zeros(np.asarray(shape).astype(int), dtype=float)
-    for x_i, semisize in zip(position, semisizes):
-        arr += np.abs(x_i / semisize) ** 2
-    return (arr <= 1.0).astype("int")
 
 
 def __material_mapping__(
@@ -220,17 +180,14 @@ def __material_mapping__(
     Compartment agnostic material mapping function
     Simone Poncioni, MSB, 08.2023
     """
+    phi = np.zeros(len(cog), dtype=np.float32)
+    rho = np.zeros(len(cog), dtype=np.float32)
+    rho_fe = np.zeros(len(cog), dtype=np.float32)
+
+    seg_array = (seg_array > 0.1).astype(np.uint8)
+    mask_array = (mask_array > 0.1).astype(np.uint8)
+
     timestart = time()
-    phi = np.zeros(len(cog))
-    rho = np.zeros(len(cog))
-    rho_fe = np.zeros(len(cog))
-
-    seg_array = np.where(seg_array > 0.1, 1, 0)
-    mask_array = np.where(mask_array > 0.1, 1, 0)
-
-    if SEG_correction == False:
-        logger.debug("SEG_correction is set to False")
-
     for i, cog_s in enumerate(cog.values()):
 
         phi_s, rho_s = calculate_bvtv(seg_array, mask_array, spacing, VOI_mm, cog_s)
@@ -249,36 +206,29 @@ def __material_mapping__(
                 )
         else:
             pass
-        # * Calculate RHO FE
-        # rho_fe_s = utils._computeBVTV_FEel(
-        #     ROI=ROI_imarray,
-        #     ROI_mask=ROI_mask,
-        # )
 
-        # Enforce a minimum BV/TV of 1%
-        # --> corrects FE mesh to not have any holes
         if all_mask == True:
             if phi_s > 0.0 and rho_s < 0.01:
                 rho_s = 0.01
 
         phi[i] = phi_s
         rho[i] = rho_s
-        # rho_fe[i] = rho_fe_s
         rho_fe[i] = 1  # ! adapt this
-
-    # plt.figure(figsize=(10, 10))
-    # plt.hist(phi.flatten(), bins=100)
-    # plt.savefig(f"phi_{compartment_s}_new.png")
-    # plt.close()
-
-    # plt.figure(figsize=(10, 10))
-    # plt.hist(rho.flatten(), bins=100)
-    # plt.savefig(f"rho_{compartment_s}_new.png")
-    # plt.close()
 
     timeend = time()
     elaps_time = timeend - timestart
-    logger.info(f"Elapsed time for {compartment_s} compartment: {elaps_time} seconds")
+    print(f"Elapsed Time: {elaps_time}")
+
+    plt.figure(figsize=(10, 10))
+    plt.hist(phi.flatten(), bins=100)
+    plt.savefig(f"phi_{compartment_s}_new.png")
+    plt.close()
+
+    plt.figure(figsize=(10, 10))
+    plt.hist(rho.flatten(), bins=100)
+    plt.savefig(f"rho_{compartment_s}_new.png")
+    plt.close()
+
     return phi, rho, rho_fe
 
 
@@ -372,6 +322,28 @@ def __get_masks__(
     """
     x, y, z = cog / spacing
     VOI = VOI_mm / spacing[0]
+    semisizes_s = (float(VOI / 2),) * 3
+
+    def __generate_sphere_array__(shape, position):
+        """
+        Generate a 3D array with a sphere of given radius and position.
+
+        The function creates a 3D grid of the specified shape, and then calculates for each point in the grid
+        if it's inside the sphere (represented as 1) or outside the sphere (represented as 0).
+
+        Parameters:
+        shape (tuple): The shape of the 3D array to be generated.
+        radius (float): The radius of the sphere.
+        position (tuple): The position of the center of the sphere.
+
+        Returns:
+        np.array: A 3D numpy array of the specified shape.
+        """
+        grid = np.ogrid[[slice(-x0, dim - x0) for x0, dim in zip(position, shape)]]
+        arr = np.zeros(shape, dtype=float)
+        for x_i, semisize in zip(grid, semisizes_s):
+            arr += (x_i / semisize) ** 2
+        return (arr <= 1.0).astype(int)
 
     X = [max(x - VOI / 2, 0), min(x + VOI / 2, seg_array.shape[0])]
     Y = [max(y - VOI / 2, 0), min(y + VOI / 2, seg_array.shape[1])]
@@ -398,7 +370,7 @@ def __get_masks__(
     yc = y - Y[0]
     zc = z - Z[0]
 
-    ROI_mask_sphere = generate_sphere_array(np.shape(ROI_seg), VOI / 2, [xc, yc, zc])
+    ROI_mask_sphere = __generate_sphere_array__(np.shape(ROI_seg), [xc, yc, zc])
     return ROI_seg, ROI_mask, ROI_mask_sphere
 
 

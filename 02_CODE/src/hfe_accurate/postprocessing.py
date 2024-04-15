@@ -26,6 +26,7 @@ def datfilereader_psl(cfg, sample: str, optim: dict, loadcase: str) -> dict:
     """
     dat_filename = (
         cfg.paths.feadir
+        + "/"
         + cfg.simulations.folder_id[sample]
         + "/"
         + sample

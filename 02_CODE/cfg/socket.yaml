@@ -1,7 +1,7 @@
 solver:
   site: remote # local or remote
-  abaqus: /var/DassaultSystemes/SIMULIA/Commands/abq2021hf4                     # monterosa (Abaqus 2021)
-  # abaqus: /var/DassaultSystemes/SIMULIA/Commands/abq2021hf6                   # simone-kubuntu
+  # abaqus: /var/DassaultSystemes/SIMULIA/Commands/abq2021hf4                     # monterosa (Abaqus 2021)
+  abaqus: /var/DassaultSystemes/SIMULIA/Commands/abq2021hf6                   # simone-kubuntu
 
 socket_paths: # paths that are socket specific (you might need to change them)
   # workdir: /Users/msb/Documents/01_PHD/03_Methods/CLEAN-HFE-ACCURATE          # simone-macbook

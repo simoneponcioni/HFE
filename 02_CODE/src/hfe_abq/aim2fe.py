@@ -165,7 +165,7 @@ def aim2fe_psl(cfg, sample):
             bone = io_utils.read_aim(item, filenames, bone)
         bone = imutils.read_aim_mask_combined("MASK", filenames, bone)
 
-    image_list = ["BMD", "SEG", "CORTMASK", "TRABMASK"]
+    # image_list = ["BMD", "SEG", "CORTMASK", "TRABMASK"]
     for _, item in enumerate(image_list):
         bone = imutils.adjust_image_size(item, bone, cfg, imutils.CropType.crop)
 

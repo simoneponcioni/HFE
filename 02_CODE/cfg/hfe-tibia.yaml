@@ -1,6 +1,6 @@
 defaults:
-  - simulations
-  - paths
+  - simulations-tibia
+  - paths-tibia
   - socket
   - mesh
   - _self_

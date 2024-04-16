@@ -305,6 +305,7 @@ def read_aim(name, filenames, bone, lock):
 
     #! ONLY FOR C0003114
     if "C0003114" in filenames[name + "name"]:
+        print('Removing 35 slices')
         IMG_pad = IMG_pad[:-35, :, :]
         print(IMG_pad.GetSize())
     else:

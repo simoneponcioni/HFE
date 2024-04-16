@@ -1,5 +1,5 @@
 paths:
-  origaimdir: 00_ORIGAIM/
+  origaimdir: 00_ORIGAIM/TIBIA/
   aimdir:  01_DATA/
   feadir:  04_SIMULATIONS/
   sumdir: 05_SUMMARIES/

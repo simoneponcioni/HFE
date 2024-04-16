@@ -219,6 +219,7 @@ def __material_mapping__(
     elaps_time = timeend - timestart
     print(f"Elapsed Time: {elaps_time}")
 
+    """
     plt.figure(figsize=(10, 10))
     plt.hist(phi.flatten(), bins=100)
     plt.savefig(f"phi_{compartment_s}_new.png")
@@ -228,6 +229,7 @@ def __material_mapping__(
     plt.hist(rho.flatten(), bins=100)
     plt.savefig(f"rho_{compartment_s}_new.png")
     plt.close()
+    """
 
     return phi, rho, rho_fe
 

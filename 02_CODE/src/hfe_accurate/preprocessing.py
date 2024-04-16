@@ -52,7 +52,7 @@ def calculate_bvtv(
     print("     -> Intercept = ", intercept)
 
     if IMTYPE.find("BMD") > -1:
-        # if image is already in BMD units (e.g. Hosseinis data)
+        # if image is already in BMD units (e.g. Hosseini's data)
         BVTVraw = BMD_array / 1200.0
     elif IMTYPE.find("NATIVE") > -1:
         BMD_array = (BMD_array / scaling) * slope + intercept

@@ -18,6 +18,7 @@ multirun/
 
 # abaqus extensions
 *.odb
+*.odb_f
 *.cae
 *.dat
 *.com

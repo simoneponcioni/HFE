@@ -165,7 +165,7 @@ def aim2fe_psl(cfg, sample):
             bone = io_utils.read_aim(item, filenames, bone)
         bone = imutils.read_aim_mask_combined("MASK", filenames, bone)
 
-    image_list = ["BMD", "SEG", "CORTMASK", "TRABMASK"]
+    # image_list = ["BMD", "SEG", "CORTMASK", "TRABMASK"]
     for _, item in enumerate(image_list):
         bone = imutils.adjust_image_size(item, bone, cfg, imutils.CropType.crop)
 
@@ -211,6 +211,10 @@ def aim2fe_psl(cfg, sample):
                 / f"{sample}_{mask_name}.mhd"
             )
             sitk.WriteImage(sitk_image, cortmask_path)
+            if mask_name == "CORTMASK":
+                sitk_image_cort = sitk_image
+            else:
+                pass
 
         # append sample filename to config_mesh["img_settings"]
         sample_n = str(sample) + f"sweep_{cfg.meshing_settings.sweep_factor}"
@@ -219,7 +223,7 @@ def aim2fe_psl(cfg, sample):
         mesh = HexMesh(
             cfg.meshing_settings,
             cfg.img_settings,
-            sitk_image=sitk_image,
+            sitk_image=sitk_image_cort,
         )
 
         (

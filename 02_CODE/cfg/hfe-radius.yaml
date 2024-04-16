@@ -9,9 +9,8 @@ hydra:
   mode: MULTIRUN
   sweeper:
     params:
-      simulations.grayscale_filenames: C0002213, C0002214, C0002229, C0002209, C0002215, C0002234, C0002230, C0002232, C0002226, C0002212, C0002223, C0002236, C0002217, C0002224, C0002211, C0002233, C0002221
+      simulations.grayscale_filenames: C0002228, C0002227, C0002231, C0002235, C0002213, C0002214, C0002229, C0002209, C0002215, C0002234, C0002230, C0002232, C0002226, C0002212, C0002223, C0002236, C0002217, C0002224, C0002211, C0002233, C0002221
 
-# C0002235
 mesher:
   meshing: spline                   # or 'full-block'
   element_size: 1.2747              # singlestack 8 elements 21 coarsening factor (if you enlarge the elementsize you have to change the radius of the BVTVcort)

@@ -21,6 +21,7 @@ from scipy.spatial import KDTree  # type: ignore
 LOGGING_NAME = "HFE-ACCURATE"
 logger = logging.getLogger(LOGGING_NAME)
 logger.setLevel(logging.INFO)
+logger.propagate = False
 
 
 # flake8: noqa: E501

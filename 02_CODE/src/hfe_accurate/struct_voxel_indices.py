@@ -30,6 +30,7 @@ except ValueError:
 
 LOGGING_NAME = "HFE-ACCURATE"
 logger = logging.getLogger(LOGGING_NAME)
+logger.propagate = False
 
 
 @timeit

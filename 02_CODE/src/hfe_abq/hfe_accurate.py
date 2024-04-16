@@ -31,6 +31,7 @@ os.environ["NUMEXPR_MAX_THREADS"] = "16"
 
 LOGGING_NAME = "HFE-ACCURATE"
 logger = logging.getLogger(LOGGING_NAME)
+logger.propagate = False
 
 # flake8: noqa: E402, W503
 

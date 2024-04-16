@@ -16,6 +16,7 @@ from vtk.util.numpy_support import numpy_to_vtk, vtk_to_numpy  # type: ignore
 
 LOGGING_NAME = "HFE-ACCURATE"
 logger = logging.getLogger(LOGGING_NAME)
+logger.propagate = False
 
 
 def vtk2numpy(imvtk):

@@ -6,6 +6,7 @@ from pathlib import Path
 
 LOGGING_NAME = "HFE-ACCURATE"
 logger = logging.getLogger(LOGGING_NAME)
+logger.propagate = False
 
 
 def simulate_loadcase(cfg, sample: str, inputfile: str, umat: str, loadcase: str):

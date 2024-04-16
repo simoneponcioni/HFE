@@ -30,6 +30,7 @@ from pyhexspline.spline_mesher import HexMesh  # type: ignore
 
 LOGGING_NAME = "HFE-ACCURATE"
 logger = logging.getLogger(LOGGING_NAME)
+logger.propagate = False
 
 try:
     matplotlib.use("TkAgg")

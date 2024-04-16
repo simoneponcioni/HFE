@@ -4,6 +4,7 @@ from pathlib import Path
 
 LOGGING_NAME = "HFE-ACCURATE"
 logger = logging.getLogger(LOGGING_NAME)
+logger.propagate = False
 
 
 def remove_empty_entries_list(listname: list) -> list:

@@ -1,4 +1,3 @@
-import datetime
 import logging
 from typing import Literal
 
@@ -9,6 +8,7 @@ from hfe_utils.io_utils import timeit
 
 LOGGING_NAME = "HFE-ACCURATE"
 logger = logging.getLogger(LOGGING_NAME)
+logger.propagate = False
 
 
 @timeit
@@ -89,6 +89,7 @@ def surface_nets(
         mesh = mesh.smooth_taubin(n_iter=smoothing_num_iterations, pass_band=0.5)
 
     # save mesh for debugging
+    # import datetime # put at the top of the file
     # timenow = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     # mesh.save(f"mesh_{timenow}.vtk")
 

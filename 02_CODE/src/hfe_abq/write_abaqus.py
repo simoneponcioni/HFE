@@ -8,6 +8,7 @@ import numpy as np
 
 LOGGING_NAME = "HFE-ACCURATE"
 logger = logging.getLogger(LOGGING_NAME)
+logger.propagate = False
 
 
 # flake8: noqa: E501

@@ -10,6 +10,7 @@ from omegaconf import OmegaConf
 
 LOGGING_NAME = "HFE-ACCURATE"
 logger = logging.getLogger(LOGGING_NAME)
+logger.propagate = False
 
 
 def ext(filename, new_ext):

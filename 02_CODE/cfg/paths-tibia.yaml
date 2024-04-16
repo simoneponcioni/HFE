@@ -20,6 +20,6 @@ filenames:
 
 version:
   verification_files: 1
-  current_version: 01_sensitivity_analysis
+  current_version: 02_validation
   site_bone: Tibia                                                  # Radius / Tibia
 

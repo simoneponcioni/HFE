@@ -160,9 +160,7 @@ class AbaqusWriter:
         Returns:
         - A string containing the DEPVAR section of the Abaqus input file.
         """
-        depvars = f"""*DEPVAR
-        {nb_depvars}
-        2, DMG, Damage
+        depvars = f"""2, DMG, Damage
         15, BVTVc, BVTVC
         16, BVTVt, BVTVT
         17, PBVc, PBVC
@@ -374,7 +372,6 @@ class AbaqusWriter:
         for key, value in abq_dict.items():
             material_name = f"Material-{key}"
             material += f"*Material, name={material_name}\n"
-            material += f"*Depvar\n{i_nb_depvars},\n"
             material += f"*User material, constants={constants_number}, UNSYMM, Type=Mechanical\n"
             material += f"{constants_comment}\n"
             m = ", ".join(map(str, value["m"].flatten()))
@@ -405,6 +402,7 @@ class AbaqusWriter:
                 )  # avoids having >8 params per line
             else:
                 raise ValueError("UMAT not recognized")
+            material += f"*Depvar\n{i_nb_depvars},\n{depvars}\n"
         return material
 
     def _write_boundary_conditions(self, BC_DEF: list[int], BOTNODES: str):

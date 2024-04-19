@@ -9,7 +9,7 @@ hydra:
   mode: MULTIRUN
   sweeper:
     params:
-      simulations.grayscale_filenames: C0002232, C0002228
+      simulations.grayscale_filenames: C0002224
 
 # ! Did not work:
   # C0002228: Curve loop is not closed

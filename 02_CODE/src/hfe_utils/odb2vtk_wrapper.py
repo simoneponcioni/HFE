@@ -50,7 +50,7 @@ class Odb2VtkWrapper:
 def test():
     cfg = {"solver": {"abaqus": "/var/DassaultSystemes/SIMULIA/Commands/abq2021hf6"}}
     odb2vtkpath = "/home/simoneponcioni/Documents/04_TOOLS/ODB2VTK/python/odb2vtk.py"
-    odb_path = "/home/simoneponcioni/Desktop/odb2vtk_tests/tibia_test/test_tibia.odb"
+    odb_path = "/home/simoneponcioni/Documents/01_PHD/03_Methods/HFE/C0003091_02.odb"
 
     wrapper = Odb2VtkWrapper(odb2vtkpath, odb_path, cfg, only_last_frame=True)
     vtk_path = wrapper.convert()

@@ -1400,7 +1400,7 @@ C
 C
 C     Subroutine to invert matrix A(N,N) with the inverse stored
 C     in X(N,N) in the output. A is stored in STOA and is resituted
-C     as outpout
+C     as output
 C 
       IMPLICIT NONE
 C 

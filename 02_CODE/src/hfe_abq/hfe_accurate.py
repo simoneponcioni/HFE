@@ -26,6 +26,8 @@ import hfe_utils.print_optim_report as por
 import numpy as np
 import yaml
 from hfe_utils.io_utils import print_mem_usage, write_timing_summary
+from hfe_utils.odb2vtk_wrapper import Odb2VtkWrapper
+from hfe_utils.f_decomposition import decomposition_to_vtu
 
 os.environ["NUMEXPR_MAX_THREADS"] = "16"
 
@@ -106,7 +108,9 @@ def pipeline_hfe(cfg, folder_id, grayscale_filename):
 
     start_simulation = time()
     try:
-        simulation.simulate_loadcase(cfg, grayscale_filename, inputfile, umat, "")
+        odb_path = simulation.simulate_loadcase(
+            cfg, grayscale_filename, inputfile, umat, ""
+        )
         end_simulation = time()
     except Exception:
         logger.error("Simulation of FZ_MAX loadcase resulted in error")
@@ -151,7 +155,18 @@ def pipeline_hfe(cfg, folder_id, grayscale_filename):
         time_sim=time_record[grayscale_filename],
     )
 
-    if cfg.abaqus.delete_odb:
+    if cfg.strain_localisation.strain_analysis is True:
+        odb2vtkpath = cfg.socket_paths.odb2vtk
+        odb_path = odb_path
+        abq_path = cfg.solver.abaqus
+        odb2vtk_wrapper = Odb2VtkWrapper(
+            odb2vtkpath, odb_path, abq_path, only_last_frame=True
+        )
+        vtk_path = odb2vtk_wrapper.convert()
+        print(f"ODB to VTK file written to {vtk_path}")
+        decomposition_to_vtu(vtk_path)
+
+    if cfg.abaqus.delete_odb is True:
         odbfilename = "{}_FZ_MAX_{}.odb".format(
             grayscale_filename, current_version[0:2]
         )

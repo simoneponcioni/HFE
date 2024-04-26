@@ -6,12 +6,11 @@ import json
 
 
 class Odb2VtkWrapper:
-    def __init__(self, odb2vtk_path, odb_path, cfg, only_last_frame=False):
+    def __init__(self, odb2vtk_path, odb_path, abq_path, only_last_frame=False):
         self.odb2vtk_path = odb2vtk_path
         self.odb_path = Path(odb_path)
-        self.vtk_path = self.odb_path.with_suffix(".vtk")
-        # self.abq_path = cfg.solver.abaqus
-        self.abq_path = "/var/DassaultSystemes/SIMULIA/Commands/abq2021hf6"
+        self.vtu_path = self.odb_path.with_suffix(".vtu")
+        self.abq_path = abq_path
         self.only_last_frame = only_last_frame
 
     def get_json(self):
@@ -44,15 +43,19 @@ class Odb2VtkWrapper:
         os.system(
             f"{self.abq_path} python {self.odb2vtk_path} --header 0 --instance {instance_str} --step {step_cli} --odbFile {self.odb_path}"
         )
-        return self.vtk_path
+
+        vtu_out_path = (
+            self.odb_path.parent / self.odb_path.stem / f"{stepname}_{frames[0]}.vtu"
+        )
+        return vtu_out_path.resolve()
 
 
 def test():
-    cfg = {"solver": {"abaqus": "/var/DassaultSystemes/SIMULIA/Commands/abq2021hf6"}}
+    abq_path = "/var/DassaultSystemes/SIMULIA/Commands/abq2021hf6"
     odb2vtkpath = "/home/simoneponcioni/Documents/04_TOOLS/ODB2VTK/python/odb2vtk.py"
-    odb_path = "/home/simoneponcioni/Documents/01_PHD/03_Methods/HFE/C0003091_02.odb"
+    odb_path = "/home/simoneponcioni/Documents/01_PHD/03_Methods/HFE/04_SIMULATIONS/445_R_93_F/C0003110_02.odb"
 
-    wrapper = Odb2VtkWrapper(odb2vtkpath, odb_path, cfg, only_last_frame=True)
+    wrapper = Odb2VtkWrapper(odb2vtkpath, odb_path, abq_path, only_last_frame=True)
     vtk_path = wrapper.convert()
     print(vtk_path)
 

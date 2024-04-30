@@ -1063,7 +1063,16 @@ C     BVTV and PBV
       STATEV(20) = MM3
       STATEV(21) = (BVTVC*PBVC+BVTVT*PBVT)*MM
       STATEV(22) = OF
-C      STATEV(22) = SSSS(3,3)
+C     Deformation Gradient
+      STATEV(23) = DFGRD1(1,1)
+      STATEV(24) = DFGRD1(1,2)
+      STATEV(25) = DFGRD1(1,3)
+      STATEV(26) = DFGRD1(2,1)
+      STATEV(27) = DFGRD1(2,2)
+      STATEV(28) = DFGRD1(2,3)
+      STATEV(29) = DFGRD1(3,1)
+      STATEV(30) = DFGRD1(3,2)
+      STATEV(31) = DFGRD1(3,3)
 
 C 
       IF (DKAPPA1.LT.0.0D0) THEN
@@ -1391,7 +1400,7 @@ C
 C
 C     Subroutine to invert matrix A(N,N) with the inverse stored
 C     in X(N,N) in the output. A is stored in STOA and is resituted
-C     as outpout
+C     as output
 C 
       IMPLICIT NONE
 C 

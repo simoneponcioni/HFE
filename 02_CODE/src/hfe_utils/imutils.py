@@ -306,7 +306,7 @@ def read_aim(name, filenames, bone, lock):
 
     #! ONLY FOR C0003114
     if "C0003114" in filenames[name + "name"]:
-        print('Removing 35 slices')
+        print("Removing 35 slices")
         IMG_pad = IMG_pad[:-35, :, :]
         print(IMG_pad.GetSize())
     else:
@@ -431,7 +431,7 @@ def compute_bvtv_d_seg(bone: dict, sample: str) -> dict:
     -------
     bone: dict
     """
-    logger.info("\n ... compute BVTV and BVTVd")
+    logger.info("Compute BVTV and BVTVd")
     SEG = bone["SEG_array"]
     SEG[SEG > 0] = 1
     seg_voxels = np.sum(SEG[SEG > 0])

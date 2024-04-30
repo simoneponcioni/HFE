@@ -669,8 +669,8 @@ def __compute_eval_evect__(MSL_kernel_list, elms, BVseg, projection=True):
 
         evals[i] = evalue
         evects[i] = evect
-    logger.exception(f"MSL exception encountered {ee} times")
-    logger.exception(f"Eigenvector exception encountered {eee} times")
+    logger.warning(f"MSL exception encountered {ee} times")
+    logger.warning(f"Eigenvector exception encountered {eee} times")
     return evals, evects
 
 

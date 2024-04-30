@@ -20,6 +20,6 @@ filenames:
 
 version:
   verification_files: 1
-  current_version: 02_validation
+  current_version: 04_strain
   site_bone: Tibia                                                  # Radius / Tibia
 

@@ -160,18 +160,21 @@ class AbaqusWriter:
         Returns:
         - A string containing the DEPVAR section of the Abaqus input file.
         """
-        depvars = f"""*DEPVAR
-        {nb_depvars}
-        2, DMG, Damage
-        15, BVTVc, BVTVC
-        16, BVTVt, BVTVT
-        17, PBVc, PBVC
-        18, PBVt, PBVT
-        22, OFvalue, OF
-        23, evect_optim1, VOPT(1,1)
-        24, evect_optim2, VOPT(2,1)
-        25, evect_optim3, VOPT(3,1)
-        26, eval_min, DOPT(1)"""
+        depvars = f"""2, DMG, Damage
+15, BVTVc, BVTVC
+16, BVTVt, BVTVT
+17, PBVc, PBVC
+18, PBVt, PBVT
+22, OFvalue, OF
+23, F11, F11
+24, F12, F12
+25, F13, F13
+26, F21, F21
+27, F22, F22
+28, F23, F23
+29, F31, F31
+30, F32, F32
+31, F33, F33"""
         return "".join(
             line.lstrip() for line in textwrap.dedent(depvars).splitlines(True)
         )
@@ -358,7 +361,7 @@ class AbaqusWriter:
             constants_comment = str(
                 "**BVTVcort, BVTVtrab, BPVcort, BPVtrab, eigenvalue min, eigenvalue mid, eigenvalue max"
             )
-            i_nb_depvars = 26
+            i_nb_depvars = 31
             depvars = self._get_depvars(nb_depvars=i_nb_depvars)
 
         elif umat_name == "UMAT_QUADRIC_PRIMAL.f":
@@ -374,7 +377,6 @@ class AbaqusWriter:
         for key, value in abq_dict.items():
             material_name = f"Material-{key}"
             material += f"*Material, name={material_name}\n"
-            material += f"*Depvar\n{i_nb_depvars},\n"
             material += f"*User material, constants={constants_number}, UNSYMM, Type=Mechanical\n"
             material += f"{constants_comment}\n"
             m = ", ".join(map(str, value["m"].flatten()))
@@ -405,6 +407,7 @@ class AbaqusWriter:
                 )  # avoids having >8 params per line
             else:
                 raise ValueError("UMAT not recognized")
+            material += f"*Depvar\n{i_nb_depvars}\n{depvars}\n"
         return material
 
     def _write_boundary_conditions(self, BC_DEF: list[int], BOTNODES: str):
@@ -528,7 +531,24 @@ class AbaqusWriter:
             RF,
             CF,
             *Element Output, directions=YES
-            SDV
+            SDV2,
+            SDV15,
+            SDV16,
+            SDV17,
+            SDV18,
+            SDV22,
+            SDV23,
+            SDV24,
+            SDV25,
+            SDV26,
+            SDV27,
+            SDV28,
+            SDV29,
+            SDV30,
+            SDV31,
+            S,
+            LE,
+            COORD,
             ** HISTORY OUTPUT
             *Output, history
             *Node Output, nset={REF_NODE}

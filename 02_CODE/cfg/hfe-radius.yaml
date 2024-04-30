@@ -9,11 +9,9 @@ hydra:
   mode: MULTIRUN
   sweeper:
     params:
-      simulations.grayscale_filenames: C0002211, C0002214, C0002228
+      simulations.grayscale_filenames: C0002224
 
 # ! Did not work:
-  # C0002211: unable to find 2377 19063 0 1
-  # C0002214: Negative element volume detected
   # C0002228: Curve loop is not closed
 
 
@@ -29,7 +27,7 @@ image_processing:
   bvtv_scaling: 1                   # 0: no scaling, 1: Scaling of BVTV 61um to BVTV 11.4um [Hosseini2017]
   bvtv_slope: 0.963                 # bvtv intercept, added to each image voxel
   bvtv_intercept: 0.03814           # bvtv intercept, added to each image voxel
-  BVTVd_comparison: True            # runs the comparison in imutils.compute_bvtv_d_seg()
+  BVTVd_comparison: False            # runs the comparison in imutils.compute_bvtv_d_seg()
   BVTVd_as_BVTV: False              # True = BVTVd as BVTV, False= SEG as BVTV
   SEG_correction: True              # if BVTVd_as_BVTV is False you can apply a seg correction
   BMC_conservation: False           # [True/False] conservation of BMC

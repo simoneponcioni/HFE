@@ -54,4 +54,5 @@ def simulate_loadcase(cfg, sample: str, inputfile: str, umat: str, loadcase: str
         logger.error(sys.stderr)
         pass
     os.chdir(basepath)
-    return None
+    odb_path = simdir / (job + ".odb")
+    return odb_path

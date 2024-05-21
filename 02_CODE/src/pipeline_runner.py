@@ -12,7 +12,6 @@ import json
 
 import coloredlogs  # type: ignore
 import hydra
-from config import HFEConfig
 from hfe_abq.hfe_accurate import pipeline_hfe
 from hydra.core.config_store import ConfigStore
 

@@ -1,0 +1,62 @@
+Bootstrap: docker
+From: ubuntu:24.04
+Stage: spython-base
+
+%files
+./requirements.txt .
+%post
+
+DEBIAN_FRONTEND=noninteractive
+
+# Set GitHub username and personal access token
+su - _UID=1000 # USER_UID=1000
+su - _GID=1000 # USER_GID=1000
+
+apt-get update && apt-get install -y wget git apt-utils git cmake gcc g++ gfortran python3 python3-numpy python3-scipy python3-pip swig clang-tidy emacs-nox valgrind texlive texlive-latex-recommended texlive-latex-extra texinfo libreoffice fonts-cmu libpetsc-complex-dev libslepc-complex3.19-dev python3-dev libopenblas-dev libfltk1.3-dev libfreetype6-dev libgl1-mesa-dev libxi-dev libxmu-dev mesa-common-dev tcl-dev tk-dev libhdf5-dev libcgns-dev libxft-dev libxinerama-dev libxcursor-dev libxfixes-dev libocct-foundation-dev libocct-data-exchange-dev libocct-ocaf-dev libopenmpi-dev libboost-dev cargo clang gcovr ftp libgl1-mesa-dri && apt-get clean
+
+# Install miniconda
+wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda.sh && \
+bash ~/miniconda.sh -b -p /opt/miniconda && \
+rm ~/miniconda.sh
+PATH="/opt/miniconda/bin:$PATH"
+
+# Create a conda environment
+conda create -n hfe-essentials python=3.12
+SHELL ["conda", "run", "-n", "hfe-essentials", "/bin/bash", "-c"]
+# Copy hfe requirements.txt and install requirements
+pip install -r requirements.txt
+pip install -U scikit-image
+pip install imutils
+
+# Install the meshing package
+# git clone https://${GITHUB_USERNAME}:${GITHUB_TOKEN}@github.com/artorg-unibe-ch/spline_mesher.git ./pyhexspline/spline_mesher
+git clone https://simoneponcioni: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@github.com/artorg-unibe-ch/spline_mesher.git ./pyhexspline/spline_mesher
+mkdir -p ./pyhexspline/spline_mesher
+cd ./pyhexspline/spline_mesher
+pip install -e .
+
+# Change ownership of the conda environment to the hfe user
+useradd -ms /bin/bash hfe
+chown -R hfe:hfe /opt/miniconda/envs/hfe-essentials
+
+su -  hfe # USER hfe
+mkdir -p /home/hfe
+cd /home/hfe
+mkdir -p ~/.ssh
+chmod 700 ~/.ssh
+PATH="/opt/cargo/bin:${PATH}"
+
+# conda init, source .bashrc, conda activate
+conda init bash
+echo "source ~/.bashrc" >> ~/.bash_profile
+echo "conda activate hfe-essentials" >> ~/.bash_profile
+%environment
+export DEBIAN_FRONTEND=noninteractive
+export PATH="/opt/miniconda/bin:$PATH"
+export PATH="/opt/cargo/bin:${PATH}"
+%runscript
+cd /home/hfe
+exec /bin/bash /bin/bash -c source ~/.bashrc && conda activate hfe-essentials && exec /bin/bash "$@"
+%startscript
+cd /home/hfe
+exec /bin/bash /bin/bash -c source ~/.bashrc && conda activate hfe-essentials && exec /bin/bash "$@"

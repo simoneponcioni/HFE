@@ -31,7 +31,7 @@ jobs:
             push: true
             tags: ${{ secrets.DOCKERHUB_USERNAME }}/hfe_development:latest
             build-args: |
-                USERNAME_ADMIN=${{ secrets.USERNAME_ADMIN }}
+                GITHUB_USERNAME=${{ secrets.USERNAME_ADMIN }}
                 GITHUB_TOKEN=${{ secrets.TOKEN_ADMIN }}
                 USER_UID=1000
                 USER_GID=1000

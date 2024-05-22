@@ -29,4 +29,9 @@ jobs:
             context: "{{defaultContext}}:02_CODE"
             file: Dockerfile.ubuntu24.04
             push: true
-            tags: simoneponcioni/hfe_development:latest
+            tags: ${{ secrets.DOCKERHUB_USERNAME }}/hfe_development:latest
+            build-args: |
+                USERNAME_ADMIN=${{ secrets.USERNAME_ADMIN }}
+                GITHUB_TOKEN=${{ secrets.TOKEN_ADMIN }}
+                USER_UID=1000
+                USER_GID=1000

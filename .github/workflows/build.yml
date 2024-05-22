@@ -27,6 +27,6 @@ jobs:
         uses: docker/build-push-action@v5
         with:
             context: "{{defaultContext}}:02_CODE"
-            file: "{{defaultContext}}:02_CODE/Dockerfile.ubuntu24.04"
+            file: Dockerfile.ubuntu24.04
             push: true
             tags: simoneponcioni/hfe_development:latest

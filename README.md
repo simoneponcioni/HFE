@@ -33,6 +33,10 @@ This will start a Docker container with the built image and open an interactive 
 Once you're inside the Docker container, you can run the project. The exact command depends on how your project is structured, but it will generally look something like this:
 
 ```sh
+conda init
+source .bashrc
+conda activate hfe-essentials
+cd 02_CODE
 python src/pipeline_runner.py
 ```
 

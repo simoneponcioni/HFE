@@ -2,19 +2,20 @@ FROM ubuntu:24.04
 
 ENV DEBIAN_FRONTEND noninteractive
 
-# Set GitHub username and personal access token
-ARG GITHUB_USERNAME
-ARG GITHUB_TOKEN
-ARG USER_UID=1000
-ARG USER_GID=1000
-
-# RUN apt-get update && apt-get install -y wget git apt-utils git cmake gcc g++ gfortran python3 python3-numpy python3-scipy python3-pip swig clang-tidy emacs-nox valgrind texlive texlive-latex-recommended texlive-latex-extra texinfo libreoffice fonts-cmu libpetsc-complex-dev libslepc-complex3.19-dev python3-dev libopenblas-dev libfltk1.3-dev libfreetype6-dev libgl1-mesa-dev libxi-dev libxmu-dev mesa-common-dev tcl-dev tk-dev libhdf5-dev libcgns-dev libxft-dev libxinerama-dev libxcursor-dev libxfixes-dev libocct-foundation-dev libocct-data-exchange-dev libocct-ocaf-dev libopenmpi-dev libboost-dev cargo clang gcovr ftp libgl1-mesa-dri && apt-get clean
-RUN apt-get update && apt-get install -y wget git apt-utils git cmake gcc g++ gfortran python3-pip swig clang-tidy emacs-nox valgrind fonts-cmu libpetsc-complex-dev libslepc-complex3.19-dev libopenblas-dev libfltk1.3-dev libfreetype6-dev libgl1-mesa-dev libxi-dev libxmu-dev mesa-common-dev tcl-dev tk-dev libhdf5-dev libcgns-dev libxft-dev libxinerama-dev libxcursor-dev libxfixes-dev libocct-foundation-dev libocct-data-exchange-dev libocct-ocaf-dev libopenmpi-dev libboost-dev cargo clang gcovr ftp libgl1-mesa-dri && apt-get clean
+RUN apt-get update && apt-get install -y \
+apt-utils cargo clang clang-tidy cmake \
+emacs-nox fonts-cmu ftp gcc gcovr \
+git g++ gfortran libboost-dev libcgns-dev \
+libfltk1.3-dev libfreetype6-dev libgl1-mesa-dev libgl1-mesa-dri libhdf5-dev \
+libocct-data-exchange-dev libocct-foundation-dev libocct-ocaf-dev libopenblas-dev libopenmpi-dev \
+libpetsc-complex-dev libxfixes-dev libxcursor-dev libxft-dev libxi-dev \
+libxinerama-dev libxmu-dev libslepc-complex3.19-dev mesa-common-dev python3-pip \
+swig tcl-dev tk-dev valgrind wget \
+&& apt-get clean
 
 # Install miniconda
 RUN wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda.sh && \
-    bash ~/miniconda.sh -b -p /opt/miniconda && \
-    rm ~/miniconda.sh
+bash ~/miniconda.sh -b -p /opt/miniconda && rm ~/miniconda.sh
 ENV PATH="/opt/miniconda/bin:$PATH"
 
 # Create a conda environment
@@ -22,11 +23,17 @@ RUN conda create -n hfe-essentials python=3.12
 SHELL ["conda", "run", "-n", "hfe-essentials", "/bin/bash", "-c"]
 # Copy hfe requirements.txt and install requirements
 COPY ./requirements.txt .
-RUN pip install -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 RUN pip install -U scikit-image
 RUN pip install imutils
 
-# Install the meshing package
+# Set GitHub username and personal access token
+ARG GITHUB_USERNAME
+ARG GITHUB_TOKEN
+ARG USER_UID=1000
+ARG USER_GID=1000
+
+# Install the meshing package # TODO: reactivate when github action is cloning from public repo
 RUN git clone https://${GITHUB_USERNAME}:${GITHUB_TOKEN}@github.com/artorg-unibe-ch/spline_mesher.git ./pyhexspline/spline_mesher
 WORKDIR ./pyhexspline/spline_mesher
 RUN pip install -e .
@@ -43,6 +50,7 @@ ENV PATH="/opt/cargo/bin:${PATH}"
 
 # conda init, source .bashrc, conda activate
 RUN conda init bash
+RUN echo "conda activate hfe-essentials" >> ~/.bashrc
 RUN echo "source ~/.bashrc" >> ~/.bash_profile
-RUN echo "conda activate hfe-essentials" >> ~/.bash_profile
-CMD ["/bin/bash", "-c", "source ~/.bashrc && conda activate hfe-essentials && exec /bin/bash"]
+
+# https://pythonspeed.com/articles/activate-conda-dockerfile/

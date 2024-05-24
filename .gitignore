@@ -16,6 +16,7 @@ outputs/
 04_SIMULATIONS/
 !04_SIMULATIONS/simulations_directory.text
 99_TEMP/
+hpc/
 
 multirun/
 

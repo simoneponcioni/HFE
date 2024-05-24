@@ -153,7 +153,7 @@ def decomposition_to_vtu(input_filepath):
 
 def main():
     input_filepath = Path(
-        "../../04_SIMULATIONS/445_R_93_F/C0003110_02/Step-Compression_26.vtu"
+        "../../../04_SIMULATIONS/TIBIA/449_L_93_F/C0003094_04_bigdisp/Step-Compression_331.vtu"
     )
     decomposition_to_vtu(input_filepath)
 

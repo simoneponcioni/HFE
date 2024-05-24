@@ -18,7 +18,6 @@ from shutil import move
 from time import time
 
 import hfe_abq.aim2fe as aim2fe
-import hfe_abq.create_loadcases as create_loadcases
 import hfe_abq.simulation as simulation
 import hfe_accurate.postprocessing as postprocessing
 import hfe_utils.imutils as imutils
@@ -39,15 +38,14 @@ logger.propagate = False
 
 
 def pipeline_hfe(cfg, folder_id, grayscale_filename):
-    """
     # TODO: reactivate this for mesh sensitivity analysis
-    n_sim = int(5)  # has to match sweep in config
+    n_sim = int(15)  # has to match sweep in config
     # min = 5, 5, 2, 7
     # max = 20, 50, 10, 50 did not work, reducing to 20, 40, 10, 40
-    n_elms_longitudinal = np.linspace(1, 3, n_sim, dtype=int)
-    n_elms_transverse_trab = np.linspace(1, 6, n_sim, dtype=int)
-    n_elms_transverse_cort = np.linspace(1, 2, n_sim, dtype=int)
-    n_radial = np.linspace(1, 8, n_sim, dtype=int)
+    n_elms_longitudinal = np.linspace(1, 20, n_sim, dtype=int)
+    n_elms_transverse_trab = np.linspace(3, 50, n_sim, dtype=int)
+    n_elms_transverse_cort = np.linspace(1, 10, n_sim, dtype=int)
+    n_radial = np.linspace(3, 50, n_sim, dtype=int)
 
     # update meshing settings with sweep factor for sensitivity analysis
     sweep = cfg.meshing_settings.sweep_factor
@@ -61,7 +59,6 @@ def pipeline_hfe(cfg, folder_id, grayscale_filename):
         n_elms_transverse_cort[sweep - 1].item()
     )
     cfg.meshing_settings.n_elms_radial = int(n_radial[sweep - 1].item())
-    """
 
     # timing
     time_record = {}

@@ -39,3 +39,53 @@ conda activate hfe-essentials
 cd 02_CODE
 python src/pipeline_runner.py
 ```
+
+## Building the Docker image in Apptainer
+
+When working on HPC, it might be necessary to run the container in Apptainer. You can pull the Docker image directly from Docker Hub:
+
+```sh
+apptainer build --sandbox hfe_development.sif docker://simoneponcioni/hfe_development:latest
+```
+
+Once it's downloaded, run it following these steps:
+
+### Work interactively
+
+Submit an interactive SLURM job and then use the shell command to spawn an interactive shell within the Singularity container:
+
+```sh
+srun --time=01:00:00 --mem-per-cpu=2G --pty bash
+apptainer shell <image>
+```
+
+### Execute the containers “runscript”
+
+```sh
+#!/bin/bash
+#SBATCH --partition=all
+#SBATCH --mem-per-cpu=2G
+
+apptainer run <image>   #or ./<image>
+```
+
+### Run a command within your container image
+
+```sh
+apptainer exec <image> <command>
+
+e.g:
+apptainer exec container.img cat /etc/os-release
+```
+
+### Bind directories
+
+Per default the started application (e.g. cat in the last example) runs withing the container. The container works like a seperate machine with own operation system etc. Thus, per default you have no access to files and directories outside the container. This can be changed using binding paths.
+
+If files are needed outside the container, e.g. in your HOME you can add the path to APPTAINER_BINDPATH="src1[:dest1],src2[:dest2]. All subdirectories and files will be accessible. Thus you could bind your HOME directory as:
+
+```sh
+export APPTAINER_BINDPATH="$HOME/:$HOME/"   
+# or simply 
+export APPTAINER_BINDPATH="$HOME"
+```

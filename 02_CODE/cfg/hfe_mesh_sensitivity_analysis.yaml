@@ -1,22 +1,20 @@
 defaults:
-  - simulations
-  - paths
+  - simulations-radius
+  - paths-radius
   - socket
   - mesh
   - _self_
+
 
 # * Mesh sensitivity analysis settings (in conjunction with parameters in hfe_accurate.py)
 hydra:
     mode: MULTIRUN
     sweeper:
         params:
-          meshing_settings.sweep_factor: range(1, 5)
+          meshing_settings.sweep_factor: range(1, 15)
+          simulations.grayscale_filenames:  C0002211, C0002214, C0002224, C0002231, C0002236
+          # simulations.grayscale_filenames: C0003095, C0003099, C0003105, C0003115, C0003118 
 
-# hydra:
-#   mode: MULTIRUN
-#   sweeper:
-#     params:
-#       simulations.grayscale_filenames: C0003111
 
 # NOT WORKING:
   # - C0003102 #! needs to be exported from scanner
@@ -30,11 +28,11 @@ mesher:
 image_processing:
   origaim_separate: False           # For Hosseini Dataset, Image parameters are read from original aim, not from processed BMD file, as there they were deleted by medtool pre-processing
   mask_separate: True               # Standard evaluation gives two separate mask file (CORTMASK and TRABMASK), False if one maskfile with two different labels
-  imtype: NATIVE                    # NATIVE or BMD
+  imtype: BMD                       # NATIVE or BMD
   bvtv_scaling: 1                   # 0: no scaling, 1: Scaling of BVTV 61um to BVTV 11.4um [Hosseini2017]
   bvtv_slope: 0.963                 # bvtv intercept, added to each image voxel
   bvtv_intercept: 0.03814           # bvtv intercept, added to each image voxel
-  BVTVd_comparison: True            # runs the comparison in imutils.compute_bvtv_d_seg()
+  BVTVd_comparison: False           # runs the comparison in imutils.compute_bvtv_d_seg()
   BVTVd_as_BVTV: False              # True = BVTVd as BVTV, False= SEG as BVTV
   SEG_correction: True              # if BVTVd_as_BVTV is False you can apply a seg correction
   BMC_conservation: False           # [True/False] conservation of BMC
@@ -58,16 +56,18 @@ loadcase:
   time_for_displacement: 1
   min_step_size: 0.0000000001
   max_step_size: 0.3
-  load_displacement: -0.35           # (mm)
+  load_displacement: -0.3           # (mm)
 
 abaqus:
   nlgeom: on                        # affects NLGEOM parameter in abaqus simulation (on/off)
-  abaqus_nprocs: 8                  # (-)
+  abaqus_nprocs: 10                 # (-)
   abaqus_memory: 6000               # (MB)
   delete_odb: False                 # delete odb after retrieving data
   max_increments: 1000              # int number [1-1000]
   umat: 02_CODE/abq/UMAT_BIPHASIC.f
 
+strain_localisation:
+  strain_analysis: True             # True: if using strain localisation for the analysis
 
 registration:
   registration: False               # True: if using registered data for longitudinal studies

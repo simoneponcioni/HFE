@@ -13,7 +13,7 @@ import json
 import coloredlogs  # type: ignore
 import hydra
 from config import HFEConfig
-from hfe_abq.hfe_accurate import pipeline_hfe
+from hfe_accurate.hfe_accurate import pipeline_hfe
 from hydra.core.config_store import ConfigStore
 
 # flake8: noqa: E501
@@ -76,7 +76,7 @@ def standalone_execution_sequential(cfg: HFEConfig):
     # io_utils.log_append_processingtime(summary_path, time_record_full)
 
 
-@hydra.main(config_path="../cfg/", config_name="hfe-tibia", version_base=None)
+@hydra.main(config_path="../cfg/", config_name="hfe_mesh_sensitivity_analysis", version_base=None)
 def main(cfg: HFEConfig):
     EXECUTION_TYPE = ExecutionType.PYTHON
 

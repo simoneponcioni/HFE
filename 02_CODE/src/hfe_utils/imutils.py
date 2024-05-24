@@ -304,10 +304,26 @@ def read_aim(name, filenames, bone, lock):
     IMG_pad = pad_image(IMG_sitk, iso_pad_size=10)
     IMG_pad = sitk.Flip(IMG_pad, [True, False, False])
 
-    #! ONLY FOR C0003114
+    #! ONLY FOR TIBIA VALIDATION DATASET
     if "C0003114" in filenames[name + "name"]:
         print("Removing 35 slices")
         IMG_pad = IMG_pad[:-35, :, :]
+        print(IMG_pad.GetSize())
+    elif "C0003111" in filenames[name + "name"]:
+        print("Removing 35 slices")
+        IMG_pad = IMG_pad[:-35, :, :]
+        print(IMG_pad.GetSize())
+    elif "C0003106" in filenames[name + "name"]:
+        print("Removing 35 slices")
+        IMG_pad = IMG_pad[35:, :, :]
+        print(IMG_pad.GetSize())
+    elif "C0003096" in filenames[name + "name"]:
+        print("Removing 10 slices")
+        IMG_pad = IMG_pad[:-10, :, :]
+        print(IMG_pad.GetSize())
+    elif "C0003094" in filenames[name + "name"]:
+        print("Removing 10 slices")
+        IMG_pad = IMG_pad[5:-10, :, :]
         print(IMG_pad.GetSize())
     else:
         pass

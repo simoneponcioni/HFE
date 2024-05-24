@@ -4,13 +4,13 @@ ENV DEBIAN_FRONTEND noninteractive
 
 RUN apt-get update && apt-get install -y \
 apt-utils cargo clang clang-tidy cmake \
-emacs-nox fonts-cmu ftp gcc gcovr \
+fonts-cmu ftp gcc gcovr \
 git g++ gfortran libboost-dev libcgns-dev \
 libfltk1.3-dev libfreetype6-dev libgl1-mesa-dev libgl1-mesa-dri libhdf5-dev \
 libocct-data-exchange-dev libocct-foundation-dev libocct-ocaf-dev libopenblas-dev libopenmpi-dev \
 libpetsc-complex-dev libxfixes-dev libxcursor-dev libxft-dev libxi-dev \
 libxinerama-dev libxmu-dev libslepc-complex3.19-dev mesa-common-dev python3-pip \
-swig tcl-dev tk-dev valgrind wget \
+swig tcl-dev tk-dev valgrind vim wget \
 && apt-get clean
 
 # Install miniconda
@@ -51,6 +51,5 @@ ENV PATH="/opt/cargo/bin:${PATH}"
 # conda init, source .bashrc, conda activate
 RUN conda init bash
 RUN echo "conda activate hfe-essentials" >> ~/.bashrc
-RUN echo "source ~/.bashrc" >> ~/.bash_profile
 
 # https://pythonspeed.com/articles/activate-conda-dockerfile/

@@ -27,9 +27,9 @@ jobs:
         uses: docker/build-push-action@v5
         with:
             context: "{{defaultContext}}:02_CODE"
-            file: Dockerfile.ubuntu24.04
+            file: Dockerfile.ubuntu24.04.ifort
             push: true
-            tags: ${{ secrets.DOCKERHUB_USERNAME }}/hfe_development:latest
+            tags: ${{ secrets.DOCKERHUB_USERNAME }}/hfe_development_ifort:latest
             build-args: |
                 GITHUB_USERNAME=${{ secrets.USERNAME_ADMIN }}
                 GITHUB_TOKEN=${{ secrets.TOKEN_ADMIN }}

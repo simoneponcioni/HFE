@@ -38,6 +38,7 @@ logger.propagate = False
 
 
 def pipeline_hfe(cfg, folder_id, grayscale_filename):
+    '''
     # TODO: reactivate this for mesh sensitivity analysis
     n_sim = int(15)  # has to match sweep in config
     # min = 5, 5, 2, 7
@@ -59,7 +60,8 @@ def pipeline_hfe(cfg, folder_id, grayscale_filename):
         n_elms_transverse_cort[sweep - 1].item()
     )
     cfg.meshing_settings.n_elms_radial = int(n_radial[sweep - 1].item())
-
+    '''
+    
     # timing
     time_record = {}
     start_full = time()

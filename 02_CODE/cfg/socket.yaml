@@ -1,13 +1,19 @@
 solver:
   site: remote # local or remote
-  abaqus: /var/DassaultSystemes/SIMULIA/Commands/abq2021hf4                     # monterosa (Abaqus 2021)
-  # abaqus: /var/DassaultSystemes/SIMULIA/Commands/abq2021hf6                       # simone-kubuntu
-
+    # abaqus: /var/DassaultSystemes/SIMULIA/Commands/abq2021hf4                     # monterosa (Abaqus 2021)
+    # abaqus: /var/DassaultSystemes/SIMULIA/Commands/abq2021hf6                     # simone-kubuntu
+  abaqus: /storage/workspaces/artorg_msb/hpc_abaqus/Software/DassaultSystemes/SIMULIA/Commands/abq2024 # ubelix 
 socket_paths: # paths that are socket specific (you might need to change them)
-  # workdir: /Users/msb/Documents/01_PHD/03_Methods/CLEAN-HFE-ACCURATE            # simone-macbook
-  # workdir: /home/simoneponcioni/Documents/01_PHD/03_Methods/HFE                   # simone-kubuntu
-  # scratchdir: /home/simoneponcioni/.SCRATCH                                       # simone-kubuntu
-  # odb2vtk: "/home/simoneponcioni/Documents/04_TOOLS/ODB2VTK/python/odb2vtk.py"    # simone-kubuntu
-  workdir: /home/sp20q110/HFE                                                   # monterosa
-  scratchdir: /home/sp20q110/.SCRATCH                                           # monterosa
-  odb2vtk: "/home/sp20q110/TOOLS/ODB2VTK/python/odb2vtk.py"                     # monterosa
+  # SIMONE-KUBUNTU
+  # workdir: /home/simoneponcioni/Documents/01_PHD/03_Methods/HFE
+  # scratchdir: /home/simoneponcioni/.SCRATCH
+  # odb2vtk: "/home/simoneponcioni/Documents/04_TOOLS/ODB2VTK/python/odb2vtk.py"
+  # MONTEROSA
+  # workdir: /home/sp20q110/HFE
+  # scratchdir: /home/sp20q110/.SCRATCH
+  # odb2vtk: "/home/sp20q110/TOOLS/ODB2VTK/python/odb2vtk.py"
+  # UBELIX
+  workdir: /storage/workspaces/artorg_msb/hpc_abaqus/poncioni/HFE
+  scratchdir: /storage/workspaces/artorg_msb/hpc_abaqus/poncioni/.SCRATCH
+  odb2vtk: /storage/workspaces/artorg_msb/hpc_abaqus/poncioni/TOOLS/ODB2VTK/python/odb2vtk.py
+

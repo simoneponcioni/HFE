@@ -1,5 +1,5 @@
 # project-specific extensions
-*.AIM
+*.AIM*
 *.png
 *.npy
 *.vtk
@@ -11,6 +11,10 @@
 *.txt
 *.csv
 *.json
+*.err
+*.out
+*.tfm
+*.pdf
 
 outputs/
 04_SIMULATIONS/

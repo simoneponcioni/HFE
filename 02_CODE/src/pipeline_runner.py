@@ -3,12 +3,12 @@
 # this code creates a list of executables to run in parallel
 
 
+import json
 import logging
 import warnings
 from enum import Enum
 from pprint import pprint
 from time import time
-import json
 
 import coloredlogs  # type: ignore
 import hydra
@@ -76,7 +76,7 @@ def standalone_execution_sequential(cfg: HFEConfig):
     # io_utils.log_append_processingtime(summary_path, time_record_full)
 
 
-@hydra.main(config_path="../cfg/", config_name="hfe_mesh_sensitivity_analysis", version_base=None)
+@hydra.main(config_path="../cfg/", config_name="hfe-tibia", version_base=None)
 def main(cfg: HFEConfig):
     EXECUTION_TYPE = ExecutionType.PYTHON
 

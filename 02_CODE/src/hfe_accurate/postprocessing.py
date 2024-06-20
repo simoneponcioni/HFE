@@ -318,7 +318,8 @@ def write_data_summary(
             "max_force_FZ_MAX",
             "disp_at_max_force_FZ_MAX",
             "stiffness_1D_FZ_MAX",
-            "yield_force_FZ_MAX" "yield_disp_FZ_MAX",
+            "yield_force_FZ_MAX",
+            "yield_disp_FZ_MAX",
         ]
 
     def append_list_as_row(filename: str, list_of_elem: list) -> None:

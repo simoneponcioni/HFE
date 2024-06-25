@@ -1,8 +1,8 @@
 paths:
-  origaimdir: 00_ORIGAIM/TIBIA/
+  origaimdir: 00_ORIGAIM/REPRO/
   aimdir:  01_DATA/REPRO/
-  feadir:  04_SIMULATIONS/
-  sumdir: 05_SUMMARIES/
+  feadir:  04_SIMULATIONS/REPRO
+  sumdir: 05_SUMMARIES/REPRO
   commondir: 01_DATA/BATCH/FEA_noReg/IMAGES/                        # if registration is true -> path to registration files
   folder_bc_psl_loadcases: 02_CODE/abq/BC_PSL/
   boundary_conditions: 02_CODE/abq/BC_PSL/boundary_conditions.inp
@@ -14,7 +14,7 @@ filenames:
   filename_postfix_trab_mask: _TRAB_MASK_UNCOMP.AIM
   filename_postfix_mask: _MASK.AIM                                  # if mask separate == False, give this filename
   filename_postfix_bmd: _UNCOMP.AIM
-  filename_postfix_seg: _UNCOMP_SEG.AIM
+  filename_postfix_seg: _SEG_UNCOMP.AIM
   filename_postfix_common: _common_region_MASK.mhd                  # if registration is true -> file of common region
   filename_postfix_transform: _transformation.tfm                   # if registration is true -> transformation file
 

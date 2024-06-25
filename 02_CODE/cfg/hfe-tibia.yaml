@@ -1,6 +1,6 @@
 defaults:
-  - simulations-tibia
-  - paths-tibia
+  - simulations-repro
+  - paths-repro
   - socket
   - mesh
   - _self_
@@ -9,7 +9,8 @@ hydra:
   mode: MULTIRUN
   sweeper:
     params:
-      simulations.grayscale_filenames: C0003105
+
+      simulations.grayscale_filenames: C0000000
 
       # C0003093, C0003096
 # C0003091, C0003093, C0003094, C0003095, C0003096, C0003097, C0003098, C0003099, C0003101, C0003103, C0003104, C0003105, C0003106, C0003108, C0003109, C0003110, C0003111, C0003112, C0003113, C0003114, C0003115, C0003116, C0003117, C0003118
@@ -54,8 +55,7 @@ loadcase:
   time_for_displacement: 1
   min_step_size: 0.0000000001
   max_step_size: 0.3
-  # load_displacement: -0.35           # (mm)
-  load_displacement: -1.00           # (mm)
+  load_displacement: -0.35           # (mm)
 
 abaqus:
   nlgeom: on                        # affects NLGEOM parameter in abaqus simulation (on/off)
@@ -66,7 +66,7 @@ abaqus:
   umat: 02_CODE/abq/UMAT_BIPHASIC.f
 
 strain_localisation:
-  strain_analysis: True             # True: if using strain localisation for the analysis
+  strain_analysis: False             # True: if using strain localisation for the analysis
   
 
 registration:

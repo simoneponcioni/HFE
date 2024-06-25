@@ -1,5 +1,6 @@
 solver:
   site: remote # local or remote
+
   # abaqus: /var/DassaultSystemes/SIMULIA/Commands/abq2021hf4                     # monterosa (Abaqus 2021)
   abaqus: /var/DassaultSystemes/SIMULIA/Commands/abq2021hf6                       # simone-kubuntu
 

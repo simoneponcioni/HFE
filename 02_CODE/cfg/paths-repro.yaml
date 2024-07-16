@@ -20,6 +20,6 @@ filenames:
 
 version:
   verification_files: 1
-  current_version: 05_mesh_sensitivity_3
+  current_version: 04_repro_smooth
   site_bone: Tibia                                                  # Radius / Tibia
 

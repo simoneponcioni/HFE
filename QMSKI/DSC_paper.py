@@ -95,6 +95,7 @@ class DiceSimilarityCoefficient:
         cort_mask = sitk.ReadImage(self.cortmask_path)
         trab_mask = sitk.ReadImage(self.trabmask_path)
         mask_sitk = cort_mask + trab_mask
+
         mask_np = sitk.GetArrayFromImage(mask_sitk)
         mask_np = np.flip(mask_np, axis=1)
 
@@ -156,7 +157,7 @@ def main():
         name = cortmask.stem.split("_")[0]
 
         print(f"Processing {name}:\n\t{cortmask}\n\t{trabmask}\n\t{mesh}")
-        dsc = DiceSimilarityCoefficient(cortmask, trabmask, mesh, show_plots=False)
+        dsc = DiceSimilarityCoefficient(cortmask, trabmask, mesh, show_plots=True)
         coeff = dsc.compute()
         print(f"{name}: {coeff}")
         dice_results[name] = coeff

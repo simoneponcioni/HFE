@@ -9,6 +9,7 @@ hydra:
   mode: MULTIRUN
   sweeper:
     params:
+
       simulations.grayscale_filenames: C0000000
 
       # C0003093, C0003096

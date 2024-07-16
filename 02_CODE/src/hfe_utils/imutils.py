@@ -410,6 +410,7 @@ def adjust_image_size(name, bone, cfg, croptype=CropType.crop):
     Expansions in x and y dimension,
     will probably not affect strength, but will lower stiffness.
     """
+    logger.info(f"Adjust image size for {name}")
     # get bone values
     img_array = bone[name + "_array"]
     spacing = bone["Spacing"]

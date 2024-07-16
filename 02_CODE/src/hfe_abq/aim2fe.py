@@ -167,8 +167,11 @@ def aim2fe_psl(cfg, sample):
         bone = imutils.read_aim_mask_combined("MASK", filenames, bone)
 
     # image_list = ["BMD", "SEG", "CORTMASK", "TRABMASK"]
-    for _, item in enumerate(image_list):
-        bone = imutils.adjust_image_size(item, bone, cfg, imutils.CropType.crop)
+    if cfg.registration.registration is True:
+        for _, item in enumerate(image_list):
+            bone = imutils.adjust_image_size(item, bone, cfg, imutils.CropType.crop)
+    else:
+        pass
 
     # Save images with colorbar
     imutils.save_images_with_colorbar(cfg, sample, bone)
@@ -263,7 +266,10 @@ def aim2fe_psl(cfg, sample):
         """
 
         bone["elsets"] = []
+        if "FEelSize" not in bone or bone["FEelSize"]:
+            bone["FEelSize"] = int(round(cfg.mesher.element_size / spacing[0])) * bone["Spacing"]
         CoarseFactor = bone["FEelSize"][0] / bone["Spacing"][0]
+        bone["CoarseFactor"] = CoarseFactor
         BVTVscaled_shape = bone["BVTVscaled"].shape
         bone["MESH"] = np.ones(
             ([int(dim) for dim in np.floor(np.array(BVTVscaled_shape) / CoarseFactor)])

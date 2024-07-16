@@ -52,10 +52,10 @@ class Odb2VtkWrapper:
 
 def test():
     # abq_path = "/var/DassaultSystemes/SIMULIA/Commands/abq2021hf6"
-    abq_path = "/var/DassaultSystemes/SIMULIA/Commands/abq2021hf4"
+    abq_path = "/storage/workspaces/artorg_msb/hpc_abaqus/Software/DassaultSystemes/SIMULIA/Commands/abq2024"
     # odb2vtkpath = "/home/simoneponcioni/Documents/04_TOOLS/ODB2VTK/python/odb2vtk.py"
-    odb2vtkpath = "/home/sp20q110/TOOLS/ODB2VTK/python/odb2vtk.py"
-    odb_path = "/home/sp20q110/HFE/04_SIMULATIONS/TIBIA/449_L_93_F/C0003094_04_bigdisp.odb"
+    odb2vtkpath = "/storage/workspaces/artorg_msb/hpc_abaqus/poncioni/TOOLS/ODB2VTK/python/odb2vtk.py"
+    odb_path = "/storage/workspaces/artorg_msb/hpc_abaqus/poncioni/HFE/04_SIMULATIONS/REPRO/IMAGES/00000148/C1/T/C0001406_02.odb"
 
     wrapper = Odb2VtkWrapper(odb2vtkpath, odb_path, abq_path, only_last_frame=True)
     vtk_path = wrapper.convert()

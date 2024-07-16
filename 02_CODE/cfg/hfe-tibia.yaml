@@ -65,7 +65,7 @@ abaqus:
   umat: 02_CODE/abq/UMAT_BIPHASIC.f
 
 strain_localisation:
-  strain_analysis: False             # True: if using strain localisation for the analysis
+  strain_analysis: True             # True: if using strain localisation for the analysis
   
 
 registration:

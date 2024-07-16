@@ -326,7 +326,10 @@ def read_aim(name, filenames, bone, lock):
         IMG_pad = IMG_pad[5:-10, :, :]
         print(IMG_pad.GetSize())
     else:
+        # ! Updated for the REPRO dataset, check robustness
+        IMG_pad = IMG_pad[:-50, :, :]
         pass
+
 
     IMG_array = sitk.GetArrayFromImage(IMG_pad)
     IMG_array = np.flip(IMG_array, 1)

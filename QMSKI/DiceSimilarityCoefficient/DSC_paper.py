@@ -7,6 +7,8 @@ import SimpleITK as sitk
 from pathlib import Path
 import json
 
+# flake8: noqa: E501
+
 
 class DiceSimilarityCoefficient:
     def __init__(
@@ -142,7 +144,7 @@ class DiceSimilarityCoefficient:
 
 def main():
     basepath = Path(
-        "/home/simoneponcioni/Documents/01_PHD/04_Output-Reports-Presentations-Publications/HFE-RESULTS/DSC_PAPER/"
+        "/home/simoneponcioni/Documents/01_PHD/04_Output-Reports-Presentations-Publications/HFE-RESULTS/DSC_PAPER/TIBIA"
     )
 
     cortmasks_list = list(basepath.glob("*_CORTMASK.mhd"))

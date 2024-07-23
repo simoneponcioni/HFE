@@ -4,6 +4,8 @@ import numpy as np
 from pathlib import Path
 import pandas as pd
 
+# flake8: noqa: E501
+
 
 class SignedInverseCohomologyNumber:
     def __init__(self, meshpath: Path, show_plots=False):
@@ -42,7 +44,7 @@ class SignedInverseCohomologyNumber:
 
 def main():
     basepath = Path(
-        "/home/simoneponcioni/Documents/01_PHD/04_Output-Reports-Presentations-Publications/HFE-RESULTS/SICN_PAPER/"
+        "/home/simoneponcioni/Documents/01_PHD/04_Output-Reports-Presentations-Publications/HFE-RESULTS/SICN_PAPER/TIBIA"
     )
     # get all the .msh files into a list also in subdirectories
     msh_files = list(basepath.rglob("*.msh"))

@@ -20,6 +20,6 @@ filenames:
 
 version:
   verification_files: 1
-  current_version: 04_repro_smooth
+  current_version: 06_repro_paper
   site_bone: Tibia                                                  # Radius / Tibia
 

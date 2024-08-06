@@ -1,11 +1,13 @@
-import pyvista as pv
-import numpy as np
+import json
+import os
+from pathlib import Path
+
 import matplotlib.pyplot as plt
+import numpy as np
+import pyvista as pv
+import SimpleITK as sitk
 import vtk
 from vtk.util.numpy_support import numpy_to_vtk, vtk_to_numpy
-import SimpleITK as sitk
-from pathlib import Path
-import json
 
 # flake8: noqa: E501
 
@@ -105,7 +107,11 @@ class DiceSimilarityCoefficient:
             MIDSLICE = mask_np.shape[2] // 2
             plt.figure()
             plt.imshow(mask_np[:, :, MIDSLICE], cmap="gray")
-            plt.show()
+            parent_path = os.path.dirname(self.cortmask_path)
+            file_name = os.path.basename(self.cortmask_path)
+            img_name = os.path.join(parent_path, f"{file_name}_mask_np.png")
+            plt.savefig(img_name, dpi=100)
+            plt.close()
 
         mesh = pv.read(self.mesh_path)
         mesh["density"] = np.full(mesh.n_cells, 1)
@@ -128,12 +134,24 @@ class DiceSimilarityCoefficient:
             plt.imshow(mask_np[:, :, MIDSLICE], cmap="gray")
             plt.imshow(density_data_3d[:, :, MIDSLICE], cmap="gray", alpha=0.5)
             plt.colorbar()
-            plt.show()
+            # plt.show()
+            parent_path = os.path.dirname(self.cortmask_path)
+            file_name = os.path.basename(self.cortmask_path)
+            img_name = os.path.join(parent_path, f"{file_name}_density_np.png")
+            plt.savefig(img_name, dpi=100)
+            plt.close()
 
         mask_sitk = sitk.GetImageFromArray(mask_np)
         mesh_sitk = sitk.GetImageFromArray(density_data_3d)
         mask_sitk.CopyInformation(mask_sitk)
         mesh_sitk.CopyInformation(mask_sitk)
+        
+        # save images to check overlap
+        parent_path = os.path.dirname(self.cortmask_path)
+        file_name = os.path.splitext(os.path.basename(self.cortmask_path))[0]
+        img_name = os.path.join(parent_path, f"{file_name}_mask_np.png")
+        sitk.WriteImage(mask_sitk, f'{img_name}_mask_dsc.mha')
+        sitk.WriteImage(mesh_sitk, f'{img_name}_mesh_dsc.mha')
 
         meas = sitk.LabelOverlapMeasuresImageFilter()
         meas.Execute(mask_sitk, mesh_sitk)

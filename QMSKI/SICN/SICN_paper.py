@@ -3,7 +3,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 from pathlib import Path
 import pandas as pd
+import matplotlib
 
+matplotlib.style.use(
+    "/home/simoneponcioni/Documents/01_PHD/00_ADMIN/pos_paper.mplstyle"
+)
 # flake8: noqa: E501
 
 
@@ -31,10 +35,12 @@ class SignedInverseCohomologyNumber:
         gmsh.finalize()
 
         if self.show_plots:
-            plt.figure(figsize=(10, 5))
+            plt.figure(figsize=(5, 3))
             plt.hist(np.array(data).flatten(), bins=100, color="tab:blue")
             plt.title(f"{mesh_name.split('s')[0]}: (S-) ICN", weight="bold")
-            plt.show()
+            plt.xlabel("(S-)ICN")
+            plt.savefig(f'{mesh_name.split("s")[0]}_sicn_hist.png', dpi=600)
+            plt.close()
 
         sicn_avg = np.mean(data)
         sicn_25 = np.percentile(data, 25)
@@ -51,7 +57,7 @@ def main():
 
     sicn_dict = {}
     for meshpath in msh_files:
-        sicn = SignedInverseCohomologyNumber(meshpath, show_plots=False)
+        sicn = SignedInverseCohomologyNumber(meshpath, show_plots=True)
         sicn_avg, sicn_25, sicn_75 = sicn.compute()
         print(f"Average (S-)ICN: {sicn_avg}")
         print(f"\t25th percentile: {sicn_25}")

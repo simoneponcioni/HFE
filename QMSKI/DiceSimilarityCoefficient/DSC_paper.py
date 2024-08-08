@@ -1,11 +1,13 @@
-import pyvista as pv
-import numpy as np
+import json
+import os
+from pathlib import Path
+
 import matplotlib.pyplot as plt
+import numpy as np
+import pyvista as pv
+import SimpleITK as sitk
 import vtk
 from vtk.util.numpy_support import numpy_to_vtk, vtk_to_numpy
-import SimpleITK as sitk
-from pathlib import Path
-import json
 
 # flake8: noqa: E501
 
@@ -92,11 +94,40 @@ class DiceSimilarityCoefficient:
         intersection = np.logical_and(truth, prediction)
         return 1 - 2.0 * intersection.sum() / (truth.sum() + prediction.sum())
 
+    def register_images(self, fixed_image, moving_image):
+        """Perform 3D registration between fixed_image and moving_image."""
+        registration_method = sitk.ImageRegistrationMethod()
+
+        # Similarity metric settings.
+        registration_method.SetMetricAsMattesMutualInformation(numberOfHistogramBins=50)
+        registration_method.SetMetricSamplingStrategy(registration_method.RANDOM)
+        registration_method.SetMetricSamplingPercentage(0.01)
+
+        # Interpolator settings.
+        registration_method.SetInterpolator(sitk.sitkLinear)
+
+        # Optimizer settings.
+        registration_method.SetOptimizerAsGradientDescent(learningRate=1.0, numberOfIterations=100, convergenceMinimumValue=1e-6, convergenceWindowSize=10)
+        registration_method.SetOptimizerScalesFromPhysicalShift()
+
+        # Initial transform.
+        initial_transform = sitk.CenteredTransformInitializer(fixed_image, moving_image, sitk.Euler3DTransform(), sitk.CenteredTransformInitializerFilter.GEOMETRY)
+        registration_method.SetInitialTransform(initial_transform, inPlace=False)
+
+        # Execute registration.
+        final_transform = registration_method.Execute(sitk.Cast(fixed_image, sitk.sitkFloat32), sitk.Cast(moving_image, sitk.sitkFloat32))
+
+        return final_transform
+
     def compute(self):
         # read masks and sum them together
         cort_mask = sitk.ReadImage(self.cortmask_path)
         trab_mask = sitk.ReadImage(self.trabmask_path)
         mask_sitk = cort_mask + trab_mask
+
+        original_spacing = mask_sitk.GetSpacing()
+        original_origin = mask_sitk.GetOrigin()
+        original_size = mask_sitk.GetSize()
 
         mask_np = sitk.GetArrayFromImage(mask_sitk)
         mask_np = np.flip(mask_np, axis=1)
@@ -105,14 +136,37 @@ class DiceSimilarityCoefficient:
             MIDSLICE = mask_np.shape[2] // 2
             plt.figure()
             plt.imshow(mask_np[:, :, MIDSLICE], cmap="gray")
-            plt.show()
+            parent_path = os.path.dirname(self.cortmask_path)
+            file_name = os.path.basename(self.cortmask_path)
+            img_name = os.path.join(parent_path, f"{file_name}_mask_np.png")
+            plt.savefig(img_name, dpi=100)
+            plt.close()
 
         mesh = pv.read(self.mesh_path)
         mesh["density"] = np.full(mesh.n_cells, 1)
         mesh_grid = pv.create_grid(
             mesh, dimensions=(mask_np.shape[2], mask_np.shape[1], mask_np.shape[0])
         )
+
+        previous_origin = mesh_grid.origin
+        previous_spacing = mesh_grid.spacing
+        mesh_grid.spacing = (0.061, 0.061, 0.061)
+
+        mesh_grid.origin = (
+            previous_origin[0] + (previous_spacing[0] - mesh_grid.spacing[0]) * mesh_grid.dimensions[0] / 2,
+            previous_origin[1] + (previous_spacing[1] - mesh_grid.spacing[1]) * mesh_grid.dimensions[1] / 2,
+            previous_origin[2] + (previous_spacing[2] - mesh_grid.spacing[2]) * mesh_grid.dimensions[2] / 2,
+        )
+        
+        mesh_grid.origin = (0, 0, 0)
+
         mesh_res = mesh_grid.sample(mesh)
+        
+        # Debug prints for mesh_res properties
+        print("Mesh Res Properties:")
+        print(f"Spacing: {mesh_res.spacing}")
+        print(f"Origin: {mesh_res.origin}")
+        print(f"Dimensions: {mesh_res.dimensions}")
 
         density_data = mesh_res.get_array(name="density")
         density_data_3d = density_data.reshape(
@@ -128,12 +182,32 @@ class DiceSimilarityCoefficient:
             plt.imshow(mask_np[:, :, MIDSLICE], cmap="gray")
             plt.imshow(density_data_3d[:, :, MIDSLICE], cmap="gray", alpha=0.5)
             plt.colorbar()
-            plt.show()
+            # plt.show()
+            parent_path = os.path.dirname(self.cortmask_path)
+            file_name = os.path.basename(self.cortmask_path)
+            img_name = os.path.join(parent_path, f"{file_name}_density_np.png")
+            plt.savefig(img_name, dpi=100)
+            plt.close()
 
         mask_sitk = sitk.GetImageFromArray(mask_np)
         mesh_sitk = sitk.GetImageFromArray(density_data_3d)
-        mask_sitk.CopyInformation(mask_sitk)
-        mesh_sitk.CopyInformation(mask_sitk)
+
+        # Set original properties
+        mask_sitk.SetSpacing(original_spacing)
+        mask_sitk.SetOrigin(original_origin)
+        mesh_sitk.SetSpacing(original_spacing)
+        mesh_sitk.SetOrigin(original_origin)
+
+        # save images to check overlap
+        parent_path = os.path.dirname(self.cortmask_path)
+        file_name = os.path.splitext(os.path.basename(self.cortmask_path))[0]
+        img_name = os.path.join(parent_path, f"{file_name}_mask_np.png")
+        sitk.WriteImage(mask_sitk, f'{img_name}_mask_dsc.mha')
+        sitk.WriteImage(mesh_sitk, f'{img_name}_mesh_dsc.mha')
+
+        # Perform 3D registration
+        final_transform = self.register_images(mask_sitk, mesh_sitk)
+        mesh_sitk = sitk.Resample(mesh_sitk, mask_sitk, final_transform, sitk.sitkLinear, 0.0, mesh_sitk.GetPixelID())
 
         meas = sitk.LabelOverlapMeasuresImageFilter()
         meas.Execute(mask_sitk, mesh_sitk)
@@ -144,7 +218,7 @@ class DiceSimilarityCoefficient:
 
 def main():
     basepath = Path(
-        "/home/simoneponcioni/Documents/01_PHD/04_Output-Reports-Presentations-Publications/HFE-RESULTS/DSC_PAPER/TIBIA"
+        "/storage/workspaces/artorg_msb/hpc_abaqus/poncioni/HFE/QMSKI/DSC_PAPER/TIBIA"
     )
 
     cortmasks_list = list(basepath.glob("*_CORTMASK.mhd"))

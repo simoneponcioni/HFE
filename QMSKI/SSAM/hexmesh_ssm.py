@@ -135,10 +135,14 @@ def process_image(imnp):
 
 def get_paths(basepath: Path):
     # for all subdirs, get all '_CORTMASK' files
+    #! analysing only tibiae now, hence filter 'T'
+    #! assuming all subfolders containing tibiae are named 'T'
     cort_list = []
-    for file in basepath.iterdir():
-        if file.is_file() and "_CORTMASK" in file.name and "mhd" in file.suffix:
-            cort_list.append(file)
+    for subdir in basepath.rglob('T'):
+        if subdir.is_dir():
+            for file in subdir.glob('*.mhd'):
+                if file.is_file() and "_CORTMASK" in file.name and "mhd" in file.suffix:
+                    cort_list.append(file)
     return cort_list
 
 
@@ -214,6 +218,7 @@ def run_ssm():
             mode_to_plot,
         )
 
+
         mean_shape_mesh = pv.PolyData(scaled_mean_shape)
         mean_shape_mesh.save(f"ssm_{compartment}.vtk")
 
@@ -224,3 +229,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

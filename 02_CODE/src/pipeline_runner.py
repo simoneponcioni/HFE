@@ -94,6 +94,7 @@ def standalone_execution_sequential(cfg: HFEConfig):
     # io_utils.log_append_processingtime(summary_path, time_record_full)
 
 
+
 @hydra.main(config_path="../cfg/", config_name="hfe-tibia", version_base=None)
 def main(cfg: HFEConfig):
     EXECUTION_TYPE = ExecutionType.PYTHON

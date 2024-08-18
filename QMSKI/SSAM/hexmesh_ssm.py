@@ -7,6 +7,7 @@ import pyssam
 import SimpleITK as sitk
 from scipy.interpolate import interp1d
 from skimage.measure import find_contours
+import pyvista as pv
 
 
 def plot_cumulative_variance(explained_variance, target_variance=-1):
@@ -134,10 +135,14 @@ def process_image(imnp):
 
 def get_paths(basepath: Path):
     # for all subdirs, get all '_CORTMASK' files
+    #! analysing only tibiae now, hence filter 'T'
+    #! assuming all subfolders containing tibiae are named 'T'
     cort_list = []
-    for file in basepath.iterdir():
-        if file.is_file() and "_CORTMASK" in file.name and "mhd" in file.suffix:
-            cort_list.append(file)
+    for subdir in basepath.rglob('T'):
+        if subdir.is_dir():
+            for file in subdir.glob('*.mhd'):
+                if file.is_file() and "_CORTMASK" in file.name and "mhd" in file.suffix:
+                    cort_list.append(file)
     return cort_list
 
 
@@ -158,8 +163,9 @@ def extract_landmarks(cort_list: list):
 
         all_points_endo.append(inn_list)
         all_points_peri.append(out_list)
-    landmarks = np.array(all_points_endo)
-    return landmarks
+    landmarks_peri = np.array(all_points_peri)
+    landmarks_endo = np.array(all_points_endo)
+    return landmarks_peri, landmarks_endo
 
 
 def run_ssm():
@@ -167,33 +173,39 @@ def run_ssm():
         "/home/simoneponcioni/Documents/01_PHD/03_Methods/HFE/01_DATA/TIBIA"
     )
     cort_list = get_paths(basepath)
-    landmarks = extract_landmarks(cort_list)
-    ssm_obj = pyssam.SSM(landmarks)
-    ssm_obj.create_pca_model(ssm_obj.landmarks_columns_scale)
-    mean_shape_columnvector = ssm_obj.compute_dataset_mean()
-    mean_shape = mean_shape_columnvector.reshape(-1, 3)
-    # shape_model_components = ssm_obj.pca_model_components
+    landmarks_peri, landmarks_endo = extract_landmarks(cort_list)
+    for landmarks, compartment in zip(
+        [landmarks_peri, landmarks_endo], ["periosteum", "endosteum"]
+    ):
+        ssm_obj = pyssam.SSM(landmarks)
+        ssm_obj.create_pca_model(ssm_obj.landmarks_columns_scale)
+        mean_shape_columnvector = ssm_obj.compute_dataset_mean()
+        mean_shape = mean_shape_columnvector.reshape(-1, 3)
+        # shape_model_components = ssm_obj.pca_model_components
 
-    print(
-        f"To obtain {ssm_obj.desired_variance * 100}% variance, {ssm_obj.required_mode_number} modes are required"
-    )
-    plot_cumulative_variance(
-        np.cumsum(ssm_obj.pca_object.explained_variance_ratio_), 0.9
-    )
+        print(
+            f"To obtain {ssm_obj.desired_variance * 100}% variance, {ssm_obj.required_mode_number} modes are required"
+        )
+        plot_cumulative_variance(
+            np.cumsum(ssm_obj.pca_object.explained_variance_ratio_), 0.9
+        )
 
-    mode_to_plot = 1
-    print(
-        f"explained variance is {ssm_obj.pca_object.explained_variance_ratio_[mode_to_plot]}"
-    )
+        mode_to_plot = 1
+        print(
+            f"explained variance is {ssm_obj.pca_object.explained_variance_ratio_[mode_to_plot]}"
+        )
 
-    plot_shape_modes(
-        ssm_obj,
-        mean_shape_columnvector,
-        mean_shape,
-        ssm_obj.model_parameters,
-        ssm_obj.pca_model_components,
-        mode_to_plot,
-    )
+        plot_shape_modes(
+            ssm_obj,
+            mean_shape_columnvector,
+            mean_shape,
+            ssm_obj.model_parameters,
+            ssm_obj.pca_model_components,
+            mode_to_plot,
+        )
+
+        mean_shape_mesh = pv.PolyData(mean_shape)
+        mean_shape_mesh.save(f"ssm_{compartment}.vtk")
 
 
 def main():
@@ -202,3 +214,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

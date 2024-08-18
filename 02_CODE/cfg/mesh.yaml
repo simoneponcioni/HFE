@@ -17,6 +17,7 @@ meshing_settings:
   interp_points: 200                  # number of points to interpolate the spline
   dp_simplification_outer: 3          # Ramer-Douglas-Peucker simplification factor for the periosteal contour
   dp_simplification_inner: 5          # Ramer-Douglas-Peucker simplification factor for the endosteal contour
+
   thickness_tol: 0.5                  # minimum cortical thickness tolerance: 3 * XCTII voxel size
   phases: 2                           # 1: only external contour, 2: external and internal contour
   center_square_length_factor: 0.4    # size ratio of the refinement square: 0 < l_f < 1

@@ -170,7 +170,7 @@ def extract_landmarks(cort_list: list):
 
 def run_ssm():
     basepath = Path(
-        "/home/simoneponcioni/Documents/01_PHD/03_Methods/HFE/01_DATA/TIBIA"
+        "/home/simoneponcioni/Documents/01_PHD/03_Methods/HFE/01_DATA/TIBIA/flipped"
     )
     cort_list = get_paths(basepath)
     landmarks_peri, landmarks_endo = extract_landmarks(cort_list)
@@ -181,7 +181,21 @@ def run_ssm():
         ssm_obj.create_pca_model(ssm_obj.landmarks_columns_scale)
         mean_shape_columnvector = ssm_obj.compute_dataset_mean()
         mean_shape = mean_shape_columnvector.reshape(-1, 3)
-        # shape_model_components = ssm_obj.pca_model_components
+        shape_model_components = ssm_obj.pca_model_components
+        print(shape_model_components)
+
+        # Calculate average dimensions of the original shapes
+        original_shapes = np.vstack(landmarks)
+        avg_dimensions = np.mean(np.ptp(original_shapes, axis=0))
+
+        # Scale the mean shape to match the average dimensions
+        mean_shape_dimensions = np.ptp(mean_shape, axis=0)
+        scaling_factors = avg_dimensions / mean_shape_dimensions
+        scaled_mean_shape = mean_shape * scaling_factors
+        # scaled_mean_shape[:, 2] = np.linspace(
+        #     0, np.max(original_shapes[:, 2]), len(scaled_mean_shape[:, 2])
+        # )
+        print("test")
 
         print(
             f"To obtain {ssm_obj.desired_variance * 100}% variance, {ssm_obj.required_mode_number} modes are required"
@@ -204,7 +218,8 @@ def run_ssm():
             mode_to_plot,
         )
 
-        mean_shape_mesh = pv.PolyData(mean_shape)
+
+        mean_shape_mesh = pv.PolyData(scaled_mean_shape)
         mean_shape_mesh.save(f"ssm_{compartment}.vtk")
 
 

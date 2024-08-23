@@ -120,8 +120,10 @@ def pipeline_hfe(cfg, folder_id, grayscale_filename):
         end_simulation = time()
     time_record["simulation"] = end_simulation - start_simulation
 
+    logger.info("Running postprocessing.datfilereader_psl")
     optim = {}
     optim = postprocessing.datfilereader_psl(cfg, grayscale_filename, optim, "FZ_MAX")
+    logger.info("Execution completed: postprocessing.datfilereader_psl")
 
     # timing
     end_sample = time()
@@ -131,10 +133,18 @@ def pipeline_hfe(cfg, folder_id, grayscale_filename):
     path2dat = Path(inputfile).parent / (
         grayscale_filename + "_" + cfg.version.current_version[0:2] + ".dat"
     )
+    
+    logger.info(f"path2dat: {path2dat}")
+    logger.info(f"absolute path2dat: {path2dat.absolute}")
+    
     thickness = max(val[2] for val in bone["nodes"].values()) - min(
         val[2] for val in bone["nodes"].values()
     )
+    logger.info(f"Thickness: {thickness}")
+    
+    logger.info("Running compute_optim_report_variables")
     optim = por.compute_optim_report_variables(optim, path2dat, thickness)
+    logger.info("Execution completed: compute_optim_report_variables")
     bone = por.compute_bone_report_variables_no_psl(bone)
 
     # only for sensitivity analysis
@@ -144,6 +154,8 @@ def pipeline_hfe(cfg, folder_id, grayscale_filename):
         "n_elms_transverse_cort": cfg.meshing_settings.n_elms_transverse_cort,
         "n_elms_radial": cfg.meshing_settings.n_elms_radial,
     }
+    
+    logger.info("Executing postprocessing.write_data_summary")
     postprocessing.write_data_summary(
         cfg,
         optim,
@@ -153,11 +165,17 @@ def pipeline_hfe(cfg, folder_id, grayscale_filename):
         DOFs=bone["degrees_of_freedom"],
         time_sim=time_record[grayscale_filename],
     )
-
+    logger.info("Executed: postprocessing.write_data_summary")
+    
     if cfg.strain_localisation.strain_analysis is True:
+        logger.info("Running strain analysis evaluation")
         odb2vtkpath = cfg.socket_paths.odb2vtk
         odb_path = odb_path
         abq_path = cfg.solver.abaqus
+        logger.info(f"odb2vtkpath: {odb2vtkpath}")
+        logger.info(f"odb_path: {odb_path}")
+        logger.info(f"abq_path: {abq_path}")
+        
         odb2vtk_wrapper = Odb2VtkWrapper(
             odb2vtkpath, odb_path, abq_path, only_last_frame=True
         )

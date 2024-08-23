@@ -21,7 +21,7 @@ mesher:
   air_elements: False               # True #if you want keep the elements to have a fullbock mesh in x-y direction 
 
 image_processing:
-  origaim_separate: False           # For Hosseini Dataset, Image parameters are read from original aim, not from processed BMD file, as there they were deleted by medtool pre-processing
+  origaim_separate: False           # For Hosseini Dataset, Image parameters are read from original aim, not from processed BMD file, there they were deleted by medtool pre-processing
   mask_separate: True               # Standard evaluation gives two separate mask file (CORTMASK and TRABMASK), False if one maskfile with two different labels
   imtype: NATIVE                    # NATIVE or BMD
   bvtv_scaling: 1                   # 0: no scaling, 1: Scaling of BVTV 61um to BVTV 11.4um [Hosseini2017]
@@ -51,11 +51,11 @@ loadcase:
   time_for_displacement: 1
   min_step_size: 0.0000000001
   max_step_size: 0.3
-  load_displacement: -1.0           # (mm)
+  load_displacement: -0.10          # (mm)
 
 abaqus:
   nlgeom: on                        # affects NLGEOM parameter in abaqus simulation (on/off)
-  abaqus_nprocs: 8                  # (-)
+  abaqus_nprocs: 4                  # (-)
   abaqus_memory: 6000               # (MB)
   delete_odb: False                 # delete odb after retrieving data
   max_increments: 1000              # int number [1-1000]

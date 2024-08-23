@@ -1,8 +1,10 @@
 import logging
 import os
+import subprocess
 import sys
 import traceback
 from pathlib import Path
+import time
 
 LOGGING_NAME = "HFE-ACCURATE"
 logger = logging.getLogger(LOGGING_NAME)
@@ -40,19 +42,34 @@ def simulate_loadcase(cfg, sample: str, inputfile: str, umat: str, loadcase: str
     basepath = os.getcwd()
 
     os.chdir(simdir)
-    command = str(
-        "%s job=%s inp=%s cpus=%d memory=%d user=%s scratch=%s ask_delete=OFF -interactive"
-        % (ABAQUS, job, inputfile, NPROCS, RAM, umat, SCRATCH)
-    )
-    logger.info(command)
+    command = [
+        ABAQUS, 
+        f"job={job}", 
+        f"inp={inputfile}", 
+        f"cpus={NPROCS}", 
+        f"memory={RAM}", 
+        f"user={umat}", 
+        f"scratch={SCRATCH}", 
+        "ask_delete=OFF", 
+        "verbose=3", 
+        "-interactive"
+    ]
+    logger.info(" ".join(command))
     try:
-        os.system(command)
+        result = subprocess.run(command, capture_output=True, text=True)
+        logger.info(result.stdout)
+        if result.returncode == 0:
+            logger.info("Abaqus simulation completed successfully")
+        else:
+            logger.error("Abaqus simulation failed with return code %d", result.returncode)
+            logger.error(result.stderr)
     except Exception as e:
         logger.error("Simulation of FZ_MAX loadcase resulted in error")
         logger.error(e)
         logger.error(traceback.format_exc())
-        logger.error(sys.stderr)
-        pass
-    os.chdir(basepath)
+    finally:
+        os.chdir(basepath)
+        time.sleep(600) # TODO: remove this as soon as ubelix issue is solved (POS, 23.08.2024)
+    
     odb_path = simdir / (job + ".odb")
     return odb_path

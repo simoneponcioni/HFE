@@ -13,7 +13,7 @@ logger.propagate = False
 
 def simulate_loadcase(cfg, sample: str, inputfile: str, umat: str, loadcase: str):
     """
-    Run abaqus simulation from os subprocess.
+    Run Abaqus simulation from os subprocess.
 
     Args:
         config: configuration dictionary
@@ -25,6 +25,9 @@ def simulate_loadcase(cfg, sample: str, inputfile: str, umat: str, loadcase: str
     Returns:
         None
     """
+    
+    setup_env_cmd = 'module load intel-compilers/2021.2.0'
+    
     ABAQUS = cfg.solver.abaqus
     NPROCS = cfg.abaqus.abaqus_nprocs
     RAM = cfg.abaqus.abaqus_memory
@@ -42,21 +45,18 @@ def simulate_loadcase(cfg, sample: str, inputfile: str, umat: str, loadcase: str
     basepath = os.getcwd()
 
     os.chdir(simdir)
-    command = [
-        ABAQUS, 
-        f"job={job}", 
-        f"inp={inputfile}", 
-        f"cpus={NPROCS}", 
-        f"memory={RAM}", 
-        f"user={umat}", 
-        f"scratch={SCRATCH}", 
-        "ask_delete=OFF", 
-        "verbose=3", 
-        "-interactive"
-    ]
-    logger.info(" ".join(command))
+    # command = (
+    #     f"{setup_env_cmd} && "
+    #     f"{ABAQUS} job={job} inp={inputfile} cpus={NPROCS} memory={RAM} "
+    #     f"user={umat} scratch={SCRATCH} ask_delete=OFF verbose=3 -interactive"
+    # )
+    command = (
+        f"{ABAQUS} job={job} inp={inputfile} cpus={NPROCS} memory={RAM} "
+        f"user={umat} scratch={SCRATCH} ask_delete=OFF verbose=3 -interactive"
+    )
+    logger.info(command)
     try:
-        result = subprocess.run(command, capture_output=True, text=True)
+        result = subprocess.run(command, capture_output=True, text=True, shell=True)
         logger.info(result.stdout)
         if result.returncode == 0:
             logger.info("Abaqus simulation completed successfully")
@@ -69,7 +69,6 @@ def simulate_loadcase(cfg, sample: str, inputfile: str, umat: str, loadcase: str
         logger.error(traceback.format_exc())
     finally:
         os.chdir(basepath)
-        time.sleep(600) # TODO: remove this as soon as ubelix issue is solved (POS, 23.08.2024)
     
     odb_path = simdir / (job + ".odb")
     return odb_path

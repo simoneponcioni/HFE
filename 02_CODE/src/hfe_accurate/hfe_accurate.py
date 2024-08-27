@@ -180,7 +180,7 @@ def pipeline_hfe(cfg, folder_id, grayscale_filename):
             odb2vtkpath, odb_path, abq_path, only_last_frame=True
         )
         vtk_path = odb2vtk_wrapper.convert()
-        print(f"ODB to VTK file written to {vtk_path}")
+        logger.info(f"ODB to VTK file written to {vtk_path}")
         decomposition_to_vtu(vtk_path)
 
     if cfg.abaqus.delete_odb is True:

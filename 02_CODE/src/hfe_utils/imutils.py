@@ -329,7 +329,7 @@ def read_aim(name, filenames, bone, lock):
         #IMG_pad = IMG_pad[10:-10, :, :]
         # pass
         # ! Updated for the REPRO dataset, check robustness
-        IMG_pad = IMG_pad[:-50, :, :]
+        IMG_pad = IMG_pad[10:-40, :, :]
 
 
     IMG_array = sitk.GetArrayFromImage(IMG_pad)

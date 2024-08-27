@@ -1,8 +1,8 @@
 paths:
   origaimdir: 00_ORIGAIM/REPRO/
   aimdir:  01_DATA/REPRO/
-  feadir:  04_SIMULATIONS/REPRO
-  sumdir: 05_SUMMARIES/REPRO
+  feadir:  04_SIMULATIONS/REPRO_PAPER
+  sumdir: 05_SUMMARIES/REPRO_PAPER
   commondir: 01_DATA/BATCH/FEA_noReg/IMAGES/                        # if registration is true -> path to registration files
   folder_bc_psl_loadcases: 02_CODE/abq/BC_PSL/
   boundary_conditions: 02_CODE/abq/BC_PSL/boundary_conditions.inp

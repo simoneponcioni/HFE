@@ -549,6 +549,7 @@ class AbaqusWriter:
             S,
             LE,
             COORD,
+            SENER,
             ** HISTORY OUTPUT
             *Output, history
             *Node Output, nset={REF_NODE}
@@ -556,8 +557,7 @@ class AbaqusWriter:
             RF
             *NODE PRINT, NSET=REF_NODE, FREQUENCY=1, SUMMARY=NO
             U,
-            RF,
-            CF,
+            RF
             *End Step
         """
         return textwrap.dedent(out_hist)

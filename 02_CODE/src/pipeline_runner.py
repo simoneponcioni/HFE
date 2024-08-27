@@ -51,7 +51,6 @@ with warnings.catch_warnings(record=True) as w:
     warnings.simplefilter("always")  # Cause all warnings to always be triggered.
 
 
-
 def standalone_execution_sequential(cfg: HFEConfig):
     start_full = time()
     time_dict = {}
@@ -59,9 +58,13 @@ def standalone_execution_sequential(cfg: HFEConfig):
     try:
         grayscale_filename = cfg.simulations.grayscale_filenames
         folder_id = cfg.simulations.folder_id[grayscale_filename]
-        log_path = Path(cfg.paths.sumdir) / 'logs' / f"{grayscale_filename}_pipeline_runner.log"
+        log_path = (
+            Path(cfg.paths.sumdir)
+            / "logs"
+            / f"{grayscale_filename}_pipeline_runner.log"
+        )
         log_path.parent.mkdir(parents=True, exist_ok=True)
-        
+
         # Set up a new logger for this simulation
         sim_logger = logging.getLogger(f"{LOGGING_NAME}_{grayscale_filename}")
         sim_logger.setLevel(logging.INFO)
@@ -89,6 +92,7 @@ def standalone_execution_sequential(cfg: HFEConfig):
         json.dump(results_summary, fp)
 
     # io_utils.log_append_processingtime(summary_path, time_record_full)
+
 
 
 @hydra.main(config_path="../cfg/", config_name="hfe-tibia", version_base=None)

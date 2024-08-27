@@ -24,9 +24,9 @@ import hfe_utils.imutils as imutils
 import hfe_utils.print_optim_report as por
 import numpy as np
 import yaml
+from hfe_utils.f_decomposition import decomposition_to_vtu
 from hfe_utils.io_utils import print_mem_usage, write_timing_summary
 from hfe_utils.odb2vtk_wrapper import Odb2VtkWrapper
-from hfe_utils.f_decomposition import decomposition_to_vtu
 
 os.environ["NUMEXPR_MAX_THREADS"] = "16"
 
@@ -36,31 +36,32 @@ logger.propagate = False
 
 # flake8: noqa: E402, W503
 
+"""
+# TODO: reactivate this for mesh sensitivity analysis
+# n_sim = int(15)  # has to match sweep in config
+# min = 5, 5, 2, 7
+# max = 20, 50, 10, 50 did not work, reducing to 20, 40, 10, 40
+n_elms_longitudinal = np.linspace(1, 20, n_sim, dtype=int)
+n_elms_transverse_trab = np.linspace(3, 50, n_sim, dtype=int)
+n_elms_transverse_cort = np.linspace(1, 10, n_sim, dtype=int)
+n_radial = np.linspace(3, 50, n_sim, dtype=int)
+
+# update meshing settings with sweep factor for sensitivity analysis
+sweep = cfg.meshing_settings.sweep_factor
+cfg.meshing_settings.n_elms_longitudinal = int(
+    n_elms_longitudinal[sweep - 1].item()
+)
+cfg.meshing_settings.n_elms_transverse_trab = int(
+    n_elms_transverse_trab[sweep - 1].item()
+)
+cfg.meshing_settings.n_elms_transverse_cort = int(
+    n_elms_transverse_cort[sweep - 1].item()
+)
+cfg.meshing_settings.n_elms_radial = int(n_radial[sweep - 1].item())
+"""
+
 
 def pipeline_hfe(cfg, folder_id, grayscale_filename):
-    '''
-    # TODO: reactivate this for mesh sensitivity analysis
-    # n_sim = int(15)  # has to match sweep in config
-    # min = 5, 5, 2, 7
-    # max = 20, 50, 10, 50 did not work, reducing to 20, 40, 10, 40
-    n_elms_longitudinal = np.linspace(1, 20, n_sim, dtype=int)
-    n_elms_transverse_trab = np.linspace(3, 50, n_sim, dtype=int)
-    n_elms_transverse_cort = np.linspace(1, 10, n_sim, dtype=int)
-    n_radial = np.linspace(3, 50, n_sim, dtype=int)
-
-    # update meshing settings with sweep factor for sensitivity analysis
-    sweep = cfg.meshing_settings.sweep_factor
-    cfg.meshing_settings.n_elms_longitudinal = int(
-        n_elms_longitudinal[sweep - 1].item()
-    )
-    cfg.meshing_settings.n_elms_transverse_trab = int(
-        n_elms_transverse_trab[sweep - 1].item()
-    )
-    cfg.meshing_settings.n_elms_transverse_cort = int(
-        n_elms_transverse_cort[sweep - 1].item()
-    )
-    cfg.meshing_settings.n_elms_radial = int(n_radial[sweep - 1].item())
-    '''
 
     # timing
     time_record = {}

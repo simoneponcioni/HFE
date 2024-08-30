@@ -41,7 +41,8 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../modules.html">homogenised finite elements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules.html#homogenised-finite-elements-pipeline">Homogenised Finite Elements Pipeline</a></li>
 </ul>
 
         </div>
@@ -102,24 +103,31 @@
     <span class="n">IMTYPE</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Calculate BVTV and mask images</span>
-<span class="sd">    ------------------------------</span>
-<span class="sd">    Scaling, slope and intercept are printed out for review</span>
-<span class="sd">    If image is already in BMD units, Scaling, Slope and</span>
-<span class="sd">    Intercept are not applied. BVTVraw is scaled according to</span>
-<span class="sd">    Hosseini et al. 2017</span>
-<span class="sd">    (This scaling function could as well be defined externally).</span>
+<span class="sd">    Calculates BVTV and mask images.</span>
 
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    bone    bone results dictionary</span>
-<span class="sd">    config  configuration parameters dictionary</span>
-<span class="sd">    IMTYPE  string defining the type of image (BMD/NATIVE)</span>
+<span class="sd">    Args:</span>
+<span class="sd">        scaling (float): Scaling factor for the image.</span>
+<span class="sd">        slope (float): Slope used in the image.</span>
+<span class="sd">        intercept (float): Intercept used in the image.</span>
+<span class="sd">        BMD_array (numpy.ndarray): Array containing BMD values.</span>
+<span class="sd">        CORTMASK_array (numpy.ndarray): Array containing cortical mask values.</span>
+<span class="sd">        TRABMASK_array (numpy.ndarray): Array containing trabecular mask values.</span>
+<span class="sd">        cfg (dict): Configuration object containing image processing settings.</span>
+<span class="sd">        IMTYPE (str): String defining the type of image (&quot;BMD&quot; or &quot;NATIVE&quot;).</span>
 
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    bone    bone results dictionary</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        tuple: A tuple containing the following elements:</span>
+<span class="sd">            - BVTVscaled (numpy.ndarray): Scaled BVTV values.</span>
+<span class="sd">            - BMDscaled (numpy.ndarray): Scaled BMD values.</span>
+<span class="sd">            - BVTVraw (numpy.ndarray): Raw BVTV values.</span>
+
+<span class="sd">    This function performs the following operations:</span>
+<span class="sd">    1. Calculates BVTVraw based on the image type (BMD or NATIVE).</span>
+<span class="sd">    2. Applies BVTV scaling if specified in the configuration.</span>
+<span class="sd">    3. Creates a mask by combining cortical and trabecular masks.</span>
+<span class="sd">    4. Applies the mask to BVTVscaled, BMDscaled, and BVTVraw.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2"> ... prepare mask and BVTV images&quot;</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;     -&gt; Scaling   = &quot;</span><span class="p">,</span> <span class="n">scaling</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;     -&gt; Slope     = &quot;</span><span class="p">,</span> <span class="n">slope</span><span class="p">)</span>
@@ -152,6 +160,20 @@
 
 <span class="nd">@timeit</span>
 <span class="k">def</span> <span class="nf">input_sanity_check</span><span class="p">(</span><span class="n">SEG_array</span><span class="p">,</span> <span class="n">trabmask</span><span class="p">,</span> <span class="n">cortmask</span><span class="p">,</span> <span class="n">spacing</span><span class="p">,</span> <span class="n">tolerance</span><span class="p">,</span> <span class="n">dimZ</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Ensures the input data is in the correct format and initializes necessary variables.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        SEG_array (numpy.ndarray): Image array of segmentation.</span>
+<span class="sd">        trabmask (numpy.ndarray): Binary trabecular mask image.</span>
+<span class="sd">        cortmask (numpy.ndarray): Binary cortical mask image.</span>
+<span class="sd">        spacing (list): List of spacing in 3D.</span>
+<span class="sd">        tolerance (float): Tolerance value for the triangulation process.</span>
+<span class="sd">        dimZ (float): Dimension in the Z direction.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        tuple: A tuple containing the formatted SEG array, trabmask, cortmask, spacing, tolerance, and dimZ.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">SEG_array</span><span class="p">,</span> <span class="n">vtk</span><span class="o">.</span><span class="n">vtkImageData</span><span class="p">):</span>
         <span class="n">SEGim_vtk</span> <span class="o">=</span> <span class="n">numpy2vtk</span><span class="p">(</span><span class="n">SEG_array</span><span class="p">,</span> <span class="n">spacing</span><span class="p">)</span>
 
@@ -334,13 +356,13 @@
 <span class="nd">@timeit</span>
 <span class="k">def</span> <span class="nf">get_cell_centers</span><span class="p">(</span><span class="n">vtk_output</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    This function finds the center of gravity of each cell in a vtk output object.</span>
+<span class="sd">    Finds the center of gravity of each cell in a vtk output object.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">    - vtk_output: vtk output object</span>
+<span class="sd">        vtk_output (vtk.vtkPolyData): The vtk output object.</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">    - cog_temp: numpy array containing the center of gravity of each cell</span>
+<span class="sd">        numpy.ndarray: Array containing the center of gravity of each cell.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># Find find Center of gravity of each cell</span>
     <span class="n">filt</span> <span class="o">=</span> <span class="n">vtk</span><span class="o">.</span><span class="n">vtkCellCenters</span><span class="p">()</span>
@@ -355,21 +377,19 @@
 <span class="nd">@timeit</span>
 <span class="k">def</span> <span class="nf">assign_vtk2cell</span><span class="p">(</span><span class="n">cfg</span><span class="p">,</span> <span class="n">cog_temp</span><span class="p">,</span> <span class="n">spacing</span><span class="p">,</span> <span class="n">dimZ</span><span class="p">,</span> <span class="n">tolerance</span><span class="p">,</span> <span class="n">trabmask</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Assigns each triangle of the mesh to either the trabecular or cortical mask</span>
-<span class="sd">    based on the position of its center of gravity.</span>
+<span class="sd">    Assigns each triangle of the mesh to either the trabecular or cortical mask based on its center of gravity.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        cog_temp (np.ndarray): Array of shape (nfacet, 3) containing the center of gravity coordinates</span>
-<span class="sd">        for each triangle.</span>
-<span class="sd">        spacing (np.ndarray): Array of shape (3,) containing the voxel spacing in x, y, and z directions.</span>
-<span class="sd">        dimZ (np.ndarray): Scalar value representing the maximum z-coordinate of the mesh.</span>
-<span class="sd">        tolerance (np.ndarray): Scalar value representing the tolerance for the cortical compartment.</span>
-<span class="sd">        trabmask (np.ndarray): Array containing the trabecular mask.</span>
-<span class="sd">        nfacet (int): Number of facets (triangles) in the mesh.</span>
+<span class="sd">        cfg (dict): Configuration object containing homogenization settings.</span>
+<span class="sd">        cog_temp (numpy.ndarray): Array containing the center of gravity coordinates for each triangle.</span>
+<span class="sd">        spacing (numpy.ndarray): Array containing the voxel spacing in x, y, and z directions.</span>
+<span class="sd">        dimZ (float): Maximum z-coordinate of the mesh.</span>
+<span class="sd">        tolerance (float): Tolerance for the cortical compartment.</span>
+<span class="sd">        trabmask (numpy.ndarray): Array containing the trabecular mask.</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        Tuple of four lists containing the center of gravity coordinates and indices for the triangles assigned to</span>
-<span class="sd">        the trabecular and cortical masks, respectively.</span>
+<span class="sd">        tuple: A tuple containing the center of gravity coordinates and indices for the triangles assigned to</span>
+<span class="sd">               the trabecular and cortical masks, respectively.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">mask_cog1</span><span class="p">,</span> <span class="n">mask_cog2</span><span class="p">,</span> <span class="n">mask_cog3</span> <span class="o">=</span> <span class="n">__mask_cogs__</span><span class="p">(</span><span class="n">cog_temp</span><span class="p">,</span> <span class="n">spacing</span><span class="p">)</span>
     <span class="n">mask_cog</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">mask_cog1</span><span class="p">,</span> <span class="n">mask_cog2</span><span class="p">,</span> <span class="n">mask_cog3</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span>
@@ -423,16 +443,13 @@
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Computes the area dyadic, which represents the multiplication of the area</span>
 <span class="sd">    with the cross-product of the normals of each triangle.</span>
-<span class="sd">    These values can now be assigned to the elements according to the center</span>
-<span class="sd">    of gravity of the triangle.</span>
-<span class="sd">    All lists are sorted according to index (position in list is index</span>
-<span class="sd">    identifier for triangles).</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">    - area_cort (np.ndarray): An array of cortical area values.</span>
-<span class="sd">    - area_trab (np.ndarray): An array of trabecular area values.</span>
-<span class="sd">    - dyadic_cort (np.ndarray): An array of cortical dyadic product values.</span>
-<span class="sd">    - dyadic_trab (np.ndarray): An array of trabecular dyadic product values.</span>
+<span class="sd">        cfg (dict): Configuration object containing homogenization settings.</span>
+<span class="sd">        area_cort (numpy.ndarray): An array of cortical area values.</span>
+<span class="sd">        area_trab (numpy.ndarray): An array of trabecular area values.</span>
+<span class="sd">        dyadic_cort (list[numpy.ndarray]): A list of cortical dyadic product values.</span>
+<span class="sd">        dyadic_trab (list[numpy.ndarray]): A list of trabecular dyadic product values.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">    - Tuple[np.ndarray, np.ndarray]: A tuple containing the computed cortical</span>
@@ -458,8 +475,6 @@
 <span class="k">def</span> <span class="nf">smooth_kernel</span><span class="p">(</span><span class="n">MSL</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">ROI_kernel_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Applies a smoothing kernel to a 3D numpy array.</span>
-<span class="sd">    POS, 25.07.2023</span>
-<span class="sd">    MSB, ARTORG Center for Biomedical Engineering Research, University of Bern</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        MSL (np.ndarray): A 3D numpy array representing the input data.</span>
@@ -468,13 +483,9 @@
 <span class="sd">    Returns:</span>
 <span class="sd">        np.ndarray: A 3D numpy array representing the smoothed data.</span>
 
-<span class="sd">    Raises:</span>
-<span class="sd">        None</span>
-
 <span class="sd">    Examples:</span>
 <span class="sd">        &gt;&gt;&gt; data = np.random.rand(10, 10, 10)</span>
 <span class="sd">        &gt;&gt;&gt; smoothed_data = smooth_kernel(data, 3)</span>
-
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">kernel</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">([</span><span class="n">ROI_kernel_size</span><span class="p">,</span> <span class="n">ROI_kernel_size</span><span class="p">,</span> <span class="n">ROI_kernel_size</span><span class="p">])</span>
     <span class="n">kernel</span> <span class="o">=</span> <span class="n">kernel</span><span class="p">[:,</span> <span class="p">:,</span> <span class="p">:,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span>
@@ -488,32 +499,25 @@
 <span class="nd">@timeit</span>
 <span class="k">def</span> <span class="nf">msl_triangulation</span><span class="p">(</span><span class="n">cfg</span><span class="p">,</span> <span class="n">SEG_array</span><span class="p">,</span> <span class="n">cortmask</span><span class="p">,</span> <span class="n">trabmask</span><span class="p">,</span> <span class="n">spacing</span><span class="p">,</span> <span class="n">tolerance</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    This function is used for evaluating MSL fabric tensors.</span>
-<span class="sd">    Fabric tensors are returned in two sets:</span>
-<span class="sd">    - cortical MSL: Return values for triangles with cog in cortical mask</span>
-<span class="sd">                    (add on: &#39;cort&#39;)</span>
-<span class="sd">    - trabecular MSL: Return values for triangles with cog in trabecular mask</span>
-<span class="sd">                    (add on: &#39;trab&#39;)</span>
+<span class="sd">    Evaluates MSL fabric tensors for cortical and trabecular regions by triangulating the surface.</span>
 
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    SEG_array           image array of segmentation [X, Y, Z]</span>
-<span class="sd">    cortmask            binary cortical mask image [X, Y, Z]</span>
-<span class="sd">    trabmask            binary trabecular mask image [X, Y, Z]</span>
-<span class="sd">    spacing             list of spacing in 3D [X, Y, Z]</span>
-<span class="sd">    tolerance           # TODO: add description of tolerance</span>
+<span class="sd">    Args:</span>
+<span class="sd">        cfg (dict): Configuration object containing homogenization settings.</span>
+<span class="sd">        SEG_array (numpy.ndarray): Image array of segmentation.</span>
+<span class="sd">        cortmask (numpy.ndarray): Binary cortical mask image.</span>
+<span class="sd">        trabmask (numpy.ndarray): Binary trabecular mask image.</span>
+<span class="sd">        spacing (list): List of spacing in 3D.</span>
+<span class="sd">        tolerance (float): Tolerance value for the triangulation process.</span>
 
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    cog_points_cort     center of gravity of all triangles in cortical phase</span>
-<span class="sd">    cog_points_trab     center of gravity of all triangles in trabecular phase</span>
-<span class="sd">    areadyadic_cort     area weighted diadic product of spanning</span>
-<span class="sd">                        triangle vectors of cortical phase</span>
-<span class="sd">    areadyadic_trab     area weighted diadic product of spanning</span>
-<span class="sd">                        triangle vectors of trabecular phase</span>
-<span class="sd">    nfacet_range        number of triangles in specific phase</span>
-<span class="sd">    indices_cort        indices of triangles in cortical phase</span>
-<span class="sd">    indices_trab        indices of triangles in trabecular phase</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        tuple: A tuple containing the following elements:</span>
+<span class="sd">            - cog_points_cort (numpy.ndarray): Center of gravity of triangles in cortical phase.</span>
+<span class="sd">            - cog_points_trab (numpy.ndarray): Center of gravity of triangles in trabecular phase.</span>
+<span class="sd">            - areadyadic_cort (numpy.ndarray): Area-weighted dyadic product of cortical triangles.</span>
+<span class="sd">            - areadyadic_trab (numpy.ndarray): Area-weighted dyadic product of trabecular triangles.</span>
+<span class="sd">            - nfacet_range (numpy.ndarray): Number of triangles in specific phase.</span>
+<span class="sd">            - indices_cort (numpy.ndarray): Indices of triangles in cortical phase.</span>
+<span class="sd">            - indices_trab (numpy.ndarray): Indices of triangles in trabecular phase.</span>
 
 <span class="sd">    Notes</span>
 <span class="sd">    -----</span>
@@ -521,7 +525,7 @@
 <span class="sd">    - Adaptation of assign_MSL_triangulation function to account</span>
 <span class="sd">        for the transformation (M. Indermaur, 2023)</span>
 <span class="sd">    - Improved memory and CPU time performance (S. Poncioni, 2023)</span>
-<span class="sd">    - Cortical compartment as orthotropic material, uses cortical mask to calculate (S. Poncioni, 2024)</span>
+<span class="sd">    - Cortical compartment as transverse isotropic material, uses cortical mask to calculate (S. Poncioni, 2024)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># TODO: mask SEG_vtk with size of trabmask (we don&#39;t calculate everything also for cortex)</span>
     <span class="n">ORTHOTROPIC_CORTEX</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">homogenization</span><span class="o">.</span><span class="n">orthotropic_cortex</span>
@@ -612,14 +616,17 @@
 
 <div class="viewcode-block" id="compute_msl_spline">
 <a class="viewcode-back" href="../preprocessing.html#preprocessing.compute_msl_spline">[docs]</a>
-<span class="k">def</span> <span class="nf">compute_msl_spline</span><span class="p">(</span><span class="n">bone</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">cfg</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">compute_msl_spline</span><span class="p">(</span><span class="n">bone</span><span class="p">:</span> <span class="nb">dict</span><span class="p">,</span> <span class="n">cfg</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Computes the mean surface length (MSL) for a given bone image and configuration.</span>
+
 <span class="sd">    Args:</span>
-<span class="sd">        bone (dict): _description_</span>
-<span class="sd">        config (dict): _description_</span>
+<span class="sd">        bone (dict): A dictionary containing bone data, including spacing, segmentation arrays, and masks.</span>
+<span class="sd">        cfg (dict): A configuration dictionary containing homogenization parameters.</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">        dict: _description_</span>
+<span class="sd">        dict: The updated bone dictionary with computed MSL spline values.</span>
+
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="c1"># read config dict</span>

@@ -20,7 +20,7 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="create_loadcases module" href="create_loadcases.html" />
-    <link rel="prev" title="homogenised finite elements" href="modules.html" /> 
+    <link rel="prev" title="pipeline_runner module" href="pipeline_runner.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -44,7 +44,9 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
-<li class="toctree-l1 current"><a class="reference internal" href="modules.html">homogenised finite elements</a><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="modules.html">Getting Started</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html#homogenised-finite-elements-pipeline">Homogenised Finite Elements Pipeline</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="pipeline_runner.html">pipeline_runner module</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">aim2fe module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="create_loadcases.html">create_loadcases module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="simulation.html">simulation module</a></li>
@@ -63,7 +65,6 @@
 <li class="toctree-l2"><a class="reference internal" href="odb2vtk_wrapper.html">odb2vtk_wrapper module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="print_optim_report.html">print_optim_report module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="read_mech_params.html">read_mech_params module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pipeline_runner.html">pipeline_runner module</a></li>
 </ul>
 </li>
 </ul>
@@ -82,7 +83,7 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
-          <li class="breadcrumb-item"><a href="modules.html">homogenised finite elements</a></li>
+          <li class="breadcrumb-item"><a href="modules.html">Getting Started</a></li>
       <li class="breadcrumb-item active">aim2fe module</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/aim2fe.rst.txt" rel="nofollow"> View page source</a>
@@ -103,38 +104,65 @@ Date: 13 November 2018.</p>
 Date: March 2024</p>
 <dl class="py function">
 <dt class="sig sig-object py">
-<span class="sig-prename descclassname"><span class="pre">aim2fe.</span></span><span class="sig-name descname"><span class="pre">_helper_store_bone_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bone</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">basepath</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">_mesh</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aim2fe.html#_helper_store_bone_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
-<dd><p>Helper function to store the bone dict as a pickle file
-Can be removed after testing (POS, 02.08.2023)</p>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py">
 <span class="sig-prename descclassname"><span class="pre">aim2fe.</span></span><span class="sig-name descname"><span class="pre">aim2fe_psl</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cfg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aim2fe.html#aim2fe_psl"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
-<dd><p>Wrapper that converts AIM image to Abaqus INP.</p>
+<dd><p>Converts AIM image to Abaqus INP file using the provided configuration.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>config</strong> (<em>dict</em>) – dictionary of configuration parameters</p></li>
-<li><p><strong>sample</strong> (<em>_type_</em>) – _description_</p></li>
+<li><p><strong>cfg</strong> (<em>dict</em>) – Dictionary of configuration parameters.</p></li>
+<li><p><strong>sample</strong> (<em>str</em>) – Sample identifier.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>TypeError</strong> – _description_</p>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>TypeError</strong> – If there is an issue with the input types.</p></li>
+<li><p><strong>ValueError</strong> – If an unrecognized fabric or meshing type is encountered.</p></li>
+</ul>
 </dd>
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>_description_</p>
+<dd class="field-odd"><p>A tuple containing the bone dictionary and the path to the Abaqus INP file.</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>_type_</p>
+<dd class="field-even"><p>tuple</p>
 </dd>
 </dl>
+<p>This function performs the following operations:
+1. Sets filenames and reads image parameters.
+2. Reads AIM images and image parameters, optionally using multithreading.
+3. Adjusts image size if registration is enabled.
+4. Saves images with colorbars.
+5. Prepares material mapping by calculating BVTV and BMD values.
+6. Generates a mesh if the meshing type is “spline”.
+7. Computes MSL kernel list based on the fabric type.
+8. Maps materials to the mesh.
+9. Computes and stores summary and performance variables.
+10. Plots MSL fabric if the meshing type is “spline”.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py">
 <span class="sig-prename descclassname"><span class="pre">aim2fe.</span></span><span class="sig-name descname"><span class="pre">save_image_with_colorbar</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/aim2fe.html#save_image_with_colorbar"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
-<dd></dd></dl>
+<dd><p>Saves an image with a colorbar to the specified output path.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>numpy.ndarray</em>) – The image data to be displayed.</p></li>
+<li><p><strong>output_path</strong> (<em>str</em>) – The path where the image will be saved.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+<p>This function performs the following operations:
+1. Creates a new figure and axis.
+2. Displays the image data using a viridis colormap.
+3. Sets the title of the image based on the output path.
+4. Adds a colorbar to the right of the image.
+5. Adjusts the layout to be tight.
+6. Saves the figure to the specified output path with a resolution of 300 dpi.
+7. Clears the figure to free up memory.</p>
+</dd></dl>
 
 </section>
 
@@ -142,7 +170,7 @@ Can be removed after testing (POS, 02.08.2023)</p>
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="modules.html" class="btn btn-neutral float-left" title="homogenised finite elements" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="pipeline_runner.html" class="btn btn-neutral float-left" title="pipeline_runner module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
         <a href="create_loadcases.html" class="btn btn-neutral float-right" title="create_loadcases module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 

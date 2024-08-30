@@ -41,7 +41,8 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../modules.html">homogenised finite elements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules.html#homogenised-finite-elements-pipeline">Homogenised Finite Elements Pipeline</a></li>
 </ul>
 
         </div>
@@ -92,16 +93,19 @@
     <span class="n">TRABmask_array</span> <span class="o">=</span> <span class="n">TRABmask_array</span><span class="p">[:,</span> <span class="p">:,</span> <span class="mi">10</span><span class="p">:</span><span class="o">-</span><span class="mi">10</span><span class="p">]</span>
 
     <span class="k">def</span> <span class="nf">__fill_mask__</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Fills the mask by combining CORTmask_array and TRABmask_array.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            np.ndarray: The filled mask.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">mask</span> <span class="o">=</span> <span class="n">CORTmask_array</span> <span class="o">+</span> <span class="n">TRABmask_array</span>
         <span class="n">cort_filled</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">mask</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">cort_filled</span>
 
     <span class="k">def</span> <span class="nf">__get__normals__</span><span class="p">(</span><span class="n">surfnet_output</span><span class="p">:</span> <span class="n">pv</span><span class="o">.</span><span class="n">PolyData</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        This function computes:</span>
-<span class="sd">         - The normals of a given PolyData object</span>
-<span class="sd">         - Normalizes them</span>
-<span class="sd">         - Returns the points and their corresponding normalized normals.</span>
+<span class="sd">        Computes and normalizes the normals of a given PolyData object.</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            surfnet_output (pv.PolyData): The PolyData object for which to compute and normalize the normals.</span>
@@ -122,7 +126,7 @@
 
     <span class="k">def</span> <span class="nf">__cluster_normals__</span><span class="p">(</span><span class="n">points</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">point_normals_normalized</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        This function clusters the normals of points in a 3D grid.</span>
+<span class="sd">        Clusters the normals of points in a 3D grid.</span>
 <span class="sd">        It first normalizes and scales the points to the grid size.</span>
 <span class="sd">        Then, for each point, it adds its corresponding normal to the sum of the normals</span>
 <span class="sd">        at the grid position of the point and increments the count of vectors at that position.</span>

@@ -44,7 +44,9 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
-<li class="toctree-l1 current"><a class="reference internal" href="modules.html">homogenised finite elements</a><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="modules.html">Getting Started</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html#homogenised-finite-elements-pipeline">Homogenised Finite Elements Pipeline</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="pipeline_runner.html">pipeline_runner module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="aim2fe.html">aim2fe module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="create_loadcases.html">create_loadcases module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="simulation.html">simulation module</a></li>
@@ -63,7 +65,6 @@
 <li class="toctree-l2"><a class="reference internal" href="odb2vtk_wrapper.html">odb2vtk_wrapper module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="print_optim_report.html">print_optim_report module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="read_mech_params.html">read_mech_params module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pipeline_runner.html">pipeline_runner module</a></li>
 </ul>
 </li>
 </ul>
@@ -82,7 +83,7 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
-          <li class="breadcrumb-item"><a href="modules.html">homogenised finite elements</a></li>
+          <li class="breadcrumb-item"><a href="modules.html">Getting Started</a></li>
       <li class="breadcrumb-item active">hfe_accurate_pipeline module</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/hfe_accurate_pipeline.rst.txt" rel="nofollow"> View page source</a>
@@ -105,7 +106,23 @@ Latest update: 16.11.2023</p>
 <dl class="py function">
 <dt class="sig sig-object py">
 <span class="sig-prename descclassname"><span class="pre">hfe_accurate_pipeline.</span></span><span class="sig-name descname"><span class="pre">pipeline_hfe</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cfg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">folder_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grayscale_filename</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/hfe_accurate_pipeline.html#pipeline_hfe"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
-<dd></dd></dl>
+<dd><p>Executes the homogenized finite elements (HFE) pipeline for a given sample.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cfg</strong> – Configuration object containing all necessary settings.</p></li>
+<li><p><strong>folder_id</strong> (<em>str</em>) – Identifier for the folder containing the sample data.</p></li>
+<li><p><strong>grayscale_filename</strong> (<em>str</em>) – Filename of the grayscale image to be processed.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A tuple containing the time record dictionary and the summary path.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple</p>
+</dd>
+</dl>
+</dd></dl>
 
 </section>
 

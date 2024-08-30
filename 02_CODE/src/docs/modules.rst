@@ -1,10 +1,21 @@
-homogenised finite elements
-===========================
+Getting Started
+===============
+
+.. toctree::
+   :maxdepth: 2
+
+   installation
+   configuration
+   development
+   contributing
+
+Homogenised Finite Elements Pipeline
+=====================================
 
 .. toctree::
    :maxdepth: 4
 
-
+   pipeline_runner
    aim2fe
    create_loadcases
    simulation
@@ -23,4 +34,3 @@ homogenised finite elements
    odb2vtk_wrapper
    print_optim_report
    read_mech_params
-   pipeline_runner

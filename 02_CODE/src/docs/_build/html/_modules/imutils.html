@@ -41,7 +41,8 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../modules.html">homogenised finite elements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules.html#homogenised-finite-elements-pipeline">Homogenised Finite Elements Pipeline</a></li>
 </ul>
 
         </div>
@@ -193,11 +194,9 @@
 <span class="sd">    If the array is &quot;BMD_array&quot; or &quot;SEG_array&quot;, it uses the provided function</span>
 <span class="sd">    to save the image with a colorbar. For other arrays, it saves the image without a colorbar.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c1"># Write out test images to check quality</span>
     <span class="n">impath</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">cfg</span><span class="o">.</span><span class="n">paths</span><span class="o">.</span><span class="n">aimdir</span><span class="p">,</span> <span class="n">cfg</span><span class="o">.</span><span class="n">simulations</span><span class="o">.</span><span class="n">folder_id</span><span class="p">[</span><span class="n">sample</span><span class="p">],</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
     <span class="n">Path</span><span class="p">(</span><span class="n">impath</span><span class="p">)</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
-    <span class="c1"># Loop over the arrays and save images with colorbar</span>
     <span class="k">for</span> <span class="n">array_name</span> <span class="ow">in</span> <span class="p">[</span>
         <span class="s2">&quot;BMD_array&quot;</span><span class="p">,</span>
         <span class="s2">&quot;SEG_array&quot;</span><span class="p">,</span>
@@ -205,7 +204,6 @@
         <span class="s2">&quot;CORTMASK_array&quot;</span><span class="p">,</span>
     <span class="p">]:</span>
         <span class="n">array_data</span> <span class="o">=</span> <span class="n">bone</span><span class="p">[</span><span class="n">array_name</span><span class="p">][</span><span class="nb">int</span><span class="p">(</span><span class="n">bone</span><span class="p">[</span><span class="n">array_name</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="mi">2</span><span class="p">),</span> <span class="p">:,</span> <span class="p">:]</span>
-        <span class="c1"># transpose the array to match the image orientation</span>
         <span class="n">array_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">array_data</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
         <span class="n">image_path</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">impath</span> <span class="o">/</span> <span class="p">(</span><span class="n">array_name</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;.png&quot;</span><span class="p">)))</span>
 
@@ -235,8 +233,32 @@
 <div class="viewcode-block" id="AIMreader">
 <a class="viewcode-back" href="../imutils.html#imutils.AIMreader">[docs]</a>
 <span class="k">def</span> <span class="nf">AIMreader</span><span class="p">(</span><span class="n">fileINname</span><span class="p">,</span> <span class="n">spacing</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;reads an AIM file and provides the corresponding vtk image</span>
-<span class="sd">    with spacing, calibration data and header&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Reads an AIM file and provides the corresponding VTK image along with spacing, calibration data, and header information.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        fileINname (str): The filename of the AIM file to be read.</span>
+<span class="sd">        spacing (numpy.ndarray): Initial spacing values for the image.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        tuple: A tuple containing the following elements:</span>
+<span class="sd">            - imvtk (vtk.vtkImageData): The VTK image data.</span>
+<span class="sd">            - spacing (numpy.ndarray): The spacing between image slices.</span>
+<span class="sd">            - scaling (float or None): The scaling factor for the image, if available.</span>
+<span class="sd">            - slope (float or None): The slope used in the image, if available.</span>
+<span class="sd">            - intercept (float or None): The intercept used in the image, if available.</span>
+<span class="sd">            - header (list): The header information from the AIM file.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        SystemExit: If the AIM file format is not supported.</span>
+
+<span class="sd">    This function performs the following operations:</span>
+<span class="sd">    1. Reads the header of the AIM file to determine the format and version.</span>
+<span class="sd">    2. Extracts necessary parameters such as spacing, scaling, slope, and intercept from the header.</span>
+<span class="sd">    3. Calculates the spacing based on the original dimensions and scaling factor.</span>
+<span class="sd">    4. Reads the AIM file using VTK and sets the appropriate data type and spacing.</span>
+<span class="sd">    5. Returns the VTK image data along with the extracted parameters and header information.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># read header</span>
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;     &quot;</span> <span class="o">+</span> <span class="n">fileINname</span><span class="p">)</span>
     <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">fileINname</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
@@ -353,26 +375,29 @@
 <a class="viewcode-back" href="../imutils.html#imutils.read_img_param">[docs]</a>
 <span class="k">def</span> <span class="nf">read_img_param</span><span class="p">(</span><span class="n">filenames</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Read image pararmeters from AIM image header.</span>
-<span class="sd">    Input: AIM image (Scanco Medical)</span>
-<span class="sd">    Output: (bone dictionary)</span>
-<span class="sd">    - Spacing</span>
-<span class="sd">    - Scaling</span>
-<span class="sd">    - Slope</span>
-<span class="sd">    - Intercept</span>
+<span class="sd">    Reads image parameters from the AIM image header.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        filenames (dict): Dictionary containing the filenames, including the key &quot;RAWname&quot; for the raw AIM image.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        spacing (np.ndarray(float)): The spacing between image slices.</span>
+<span class="sd">        scaling (float): The scaling factor for the image.</span>
+<span class="sd">        slope (float): The slope used in the image.</span>
+<span class="sd">        intercept (float): The intercept used in the image.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        Exception: If an error occurs while reading the AIM image.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2"> ... read AIM files&quot;</span><span class="p">)</span>
 
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    read image informations from raw image</span>
-<span class="sd">    (only for files processed in medtool</span>
-<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">_</span><span class="p">,</span> <span class="n">spacing</span><span class="p">,</span> <span class="n">scaling</span><span class="p">,</span> <span class="n">slope</span><span class="p">,</span> <span class="n">intercept</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">AIMreader</span><span class="p">(</span>
             <span class="n">filenames</span><span class="p">[</span><span class="s2">&quot;RAWname&quot;</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0606997</span><span class="p">,</span> <span class="mf">0.0606997</span><span class="p">,</span> <span class="mf">0.0606997</span><span class="p">])</span>
         <span class="p">)</span>
     <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;An error occurred while using AIMreader: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">raise</span>
 
     <span class="k">return</span> <span class="n">spacing</span><span class="p">,</span> <span class="n">scaling</span><span class="p">,</span> <span class="n">slope</span><span class="p">,</span> <span class="n">intercept</span></div>
 
@@ -382,12 +407,22 @@
 <a class="viewcode-back" href="../imutils.html#imutils.read_aim">[docs]</a>
 <span class="k">def</span> <span class="nf">read_aim</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">filenames</span><span class="p">,</span> <span class="n">bone</span><span class="p">,</span> <span class="n">lock</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    read AIM image</span>
-<span class="sd">    --------------</span>
-<span class="sd">    All necessary AIM files are imported and stored in bone dict</span>
-<span class="sd">    Input: name specifier, filenames dict, bone dict</span>
-<span class="sd">    Output: bone dict</span>
-<span class="sd">    - numpy array containing AIM image</span>
+<span class="sd">    Reads an AIM image and stores it in the bone dictionary.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        name (str): Specifier for the type of image (e.g., &quot;BMD&quot;, &quot;SEG&quot;).</span>
+<span class="sd">        filenames (dict): Dictionary containing the filenames, including the key &quot;&lt;name&gt;name&quot; for the AIM image.</span>
+<span class="sd">        bone (dict): Dictionary to store the image data and related parameters.</span>
+<span class="sd">        lock (threading.Lock): Lock to ensure thread-safe operations on the bone dictionary.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        dict: Updated bone dictionary containing the numpy array of the AIM image.</span>
+
+<span class="sd">    This function performs the following operations:</span>
+<span class="sd">    1. Reads the AIM image using the AIMreader function.</span>
+<span class="sd">    2. Converts the AIM image to a numpy array.</span>
+<span class="sd">    3. Pads the image to avoid non-zero values at the boundary.</span>
+<span class="sd">    4. Updates the bone dictionary with the processed image array.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2"> ... read file: &quot;</span> <span class="o">+</span> <span class="n">name</span><span class="p">)</span>
@@ -427,7 +462,6 @@
         <span class="c1"># pass</span>
         <span class="c1"># ! Updated for the REPRO dataset, check robustness</span>
         <span class="n">IMG_pad</span> <span class="o">=</span> <span class="n">IMG_pad</span><span class="p">[:</span><span class="o">-</span><span class="mi">50</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:]</span>
-
 
     <span class="n">IMG_array</span> <span class="o">=</span> <span class="n">sitk</span><span class="o">.</span><span class="n">GetArrayFromImage</span><span class="p">(</span><span class="n">IMG_pad</span><span class="p">)</span>
     <span class="n">IMG_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">flip</span><span class="p">(</span><span class="n">IMG_array</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
@@ -510,13 +544,25 @@
 <a class="viewcode-back" href="../imutils.html#imutils.adjust_image_size">[docs]</a>
 <span class="k">def</span> <span class="nf">adjust_image_size</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">bone</span><span class="p">,</span> <span class="n">cfg</span><span class="p">,</span> <span class="n">croptype</span><span class="o">=</span><span class="n">CropType</span><span class="o">.</span><span class="n">crop</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Adjust image size to current FEelement size,</span>
-<span class="sd">    that no layers of the image are removed, size in z direction has to fit.</span>
-<span class="sd">    If empty layers are added in this dimension,</span>
-<span class="sd">    this will create a weak layer at the bottom of the image.</span>
-<span class="sd">    Expansions in x and y dimension,</span>
-<span class="sd">    will probably not affect strength, but will lower stiffness.</span>
+<span class="sd">    Adjusts the image size to match the current finite element (FE) element size.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        name (str): Specifier for the type of image (e.g., &quot;BMD&quot;, &quot;SEG&quot;).</span>
+<span class="sd">        bone (dict): Dictionary containing the image data and related parameters.</span>
+<span class="sd">        cfg (dict): Configuration object containing meshing settings.</span>
+<span class="sd">        croptype (CropType, optional): Type of cropping to apply. Defaults to CropType.crop.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        dict: Updated bone dictionary with adjusted image size and related parameters.</span>
+
+<span class="sd">    This function performs the following operations:</span>
+<span class="sd">    1. Retrieves the image array and spacing from the bone dictionary.</span>
+<span class="sd">    2. Calculates the coarsening factor based on the FE element size and CT voxel size.</span>
+<span class="sd">    3. Adjusts the image size for BMD image and Mask.</span>
+<span class="sd">    4. Handles specific adjustments for XCTI image resolution (82µm).</span>
+<span class="sd">    5. Updates the bone dictionary with the original and adjusted image arrays, FE element size, and coarsening factor.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Adjust image size for </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="c1"># get bone values</span>
     <span class="n">img_array</span> <span class="o">=</span> <span class="n">bone</span><span class="p">[</span><span class="n">name</span> <span class="o">+</span> <span class="s2">&quot;_array&quot;</span><span class="p">]</span>
@@ -529,7 +575,7 @@
     <span class="c1"># Adjustment for BMD image and Mask</span>
     <span class="n">img_array_adjusted</span> <span class="o">=</span> <span class="n">__adjust__img_size__</span><span class="p">(</span><span class="n">img_array</span><span class="p">,</span> <span class="n">coarse_factor</span><span class="p">,</span> <span class="n">CropType</span><span class="o">.</span><span class="n">crop</span><span class="p">)</span>
 
-    <span class="c1"># for XCTI added by MI</span>
+    <span class="c1"># for XCTI added by Michael Indermaur</span>
     <span class="k">if</span> <span class="n">spacing</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mf">0.082</span><span class="p">:</span>
         <span class="n">height</span> <span class="o">=</span> <span class="n">img_array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="n">spacing</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="n">elem_n</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">rint</span><span class="p">(</span><span class="n">height</span> <span class="o">/</span> <span class="n">cfg</span><span class="o">.</span><span class="n">mesher</span><span class="o">.</span><span class="n">element_size</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>

@@ -44,7 +44,9 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
-<li class="toctree-l1 current"><a class="reference internal" href="modules.html">homogenised finite elements</a><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="modules.html">Getting Started</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html#homogenised-finite-elements-pipeline">Homogenised Finite Elements Pipeline</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="pipeline_runner.html">pipeline_runner module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="aim2fe.html">aim2fe module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="create_loadcases.html">create_loadcases module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="simulation.html">simulation module</a></li>
@@ -63,7 +65,6 @@
 <li class="toctree-l2"><a class="reference internal" href="odb2vtk_wrapper.html">odb2vtk_wrapper module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="print_optim_report.html">print_optim_report module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="read_mech_params.html">read_mech_params module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pipeline_runner.html">pipeline_runner module</a></li>
 </ul>
 </li>
 </ul>
@@ -82,7 +83,7 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
-          <li class="breadcrumb-item"><a href="modules.html">homogenised finite elements</a></li>
+          <li class="breadcrumb-item"><a href="modules.html">Getting Started</a></li>
       <li class="breadcrumb-item active">preprocessing module</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/preprocessing.rst.txt" rel="nofollow"> View page source</a>
@@ -144,39 +145,55 @@ Speed increased by 25x (POS, 2023-07-06)</p>
 <dl class="py function">
 <dt class="sig sig-object py">
 <span class="sig-prename descclassname"><span class="pre">preprocessing.</span></span><span class="sig-name descname"><span class="pre">calculate_bvtv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">scaling</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">slope</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">intercept</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">BMD_array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">CORTMASK_array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">TRABMASK_array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cfg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">IMTYPE</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/preprocessing.html#calculate_bvtv"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
-<dd><section id="calculate-bvtv-and-mask-images">
-<h2>Calculate BVTV and mask images<a class="headerlink" href="#calculate-bvtv-and-mask-images" title="Link to this heading">¶</a></h2>
-<p>Scaling, slope and intercept are printed out for review
-If image is already in BMD units, Scaling, Slope and
-Intercept are not applied. BVTVraw is scaled according to
-Hosseini et al. 2017
-(This scaling function could as well be defined externally).</p>
+<dd><p>Calculates BVTV and mask images.</p>
 <dl class="field-list simple">
-<dt class="field-odd">param bone    bone results dictionary<span class="colon">:</span></dt>
-<dd class="field-odd"><p></p></dd>
-<dt class="field-even">param config  configuration parameters dictionary<span class="colon">:</span></dt>
-<dd class="field-even"><p></p></dd>
-<dt class="field-odd">param IMTYPE  string defining the type of image (BMD/NATIVE)<span class="colon">:</span></dt>
-<dd class="field-odd"><p></p></dd>
-<dt class="field-even">rtype<span class="colon">:</span></dt>
-<dd class="field-even"><p>bone    bone results dictionary</p>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>scaling</strong> (<em>float</em>) – Scaling factor for the image.</p></li>
+<li><p><strong>slope</strong> (<em>float</em>) – Slope used in the image.</p></li>
+<li><p><strong>intercept</strong> (<em>float</em>) – Intercept used in the image.</p></li>
+<li><p><strong>BMD_array</strong> (<em>numpy.ndarray</em>) – Array containing BMD values.</p></li>
+<li><p><strong>CORTMASK_array</strong> (<em>numpy.ndarray</em>) – Array containing cortical mask values.</p></li>
+<li><p><strong>TRABMASK_array</strong> (<em>numpy.ndarray</em>) – Array containing trabecular mask values.</p></li>
+<li><p><strong>cfg</strong> (<em>dict</em>) – Configuration object containing image processing settings.</p></li>
+<li><p><strong>IMTYPE</strong> (<em>str</em>) – String defining the type of image (“BMD” or “NATIVE”).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>A tuple containing the following elements:</dt><dd><ul class="simple">
+<li><p>BVTVscaled (numpy.ndarray): Scaled BVTV values.</p></li>
+<li><p>BMDscaled (numpy.ndarray): Scaled BMD values.</p></li>
+<li><p>BVTVraw (numpy.ndarray): Raw BVTV values.</p></li>
+</ul>
 </dd>
 </dl>
-</section>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple</p>
+</dd>
+</dl>
+<p>This function performs the following operations:
+1. Calculates BVTVraw based on the image type (BMD or NATIVE).
+2. Applies BVTV scaling if specified in the configuration.
+3. Creates a mask by combining cortical and trabecular masks.
+4. Applies the mask to BVTVscaled, BMDscaled, and BVTVraw.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py">
-<span class="sig-prename descclassname"><span class="pre">preprocessing.</span></span><span class="sig-name descname"><span class="pre">compute_msl_spline</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bone</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cfg</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/preprocessing.html#compute_msl_spline"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
-<dd><dl class="field-list simple">
+<span class="sig-prename descclassname"><span class="pre">preprocessing.</span></span><span class="sig-name descname"><span class="pre">compute_msl_spline</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bone</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cfg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="reference internal" href="_modules/preprocessing.html#compute_msl_spline"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
+<dd><p>Computes the mean surface length (MSL) for a given bone image and configuration.</p>
+<dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>bone</strong> (<em>dict</em>) – _description_</p></li>
-<li><p><strong>config</strong> (<em>dict</em>) – _description_</p></li>
+<li><p><strong>bone</strong> (<em>dict</em>) – A dictionary containing bone data, including spacing, segmentation arrays, and masks.</p></li>
+<li><p><strong>cfg</strong> (<em>dict</em>) – A configuration dictionary containing homogenization parameters.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>_description_</p>
+<dd class="field-even"><p>The updated bone dictionary with computed MSL spline values.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>dict</p>
@@ -198,9 +215,7 @@ Hosseini et al. 2017
 <dl class="py function">
 <dt class="sig sig-object py">
 <span class="sig-prename descclassname"><span class="pre">preprocessing.</span></span><span class="sig-name descname"><span class="pre">smooth_kernel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">MSL</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ROI_kernel_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference internal" href="_modules/preprocessing.html#smooth_kernel"><span class="viewcode-link"><span class="pre">[source]</span></span></a></dt>
-<dd><p>Applies a smoothing kernel to a 3D numpy array.
-POS, 25.07.2023
-MSB, ARTORG Center for Biomedical Engineering Research, University of Bern</p>
+<dd><p>Applies a smoothing kernel to a 3D numpy array.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -213,9 +228,6 @@ MSB, ARTORG Center for Biomedical Engineering Research, University of Bern</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>np.ndarray</p>
-</dd>
-<dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>None</strong> – </p>
 </dd>
 </dl>
 <p class="rubric">Examples</p>

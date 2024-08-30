@@ -62,6 +62,17 @@ cfg.meshing_settings.n_elms_radial = int(n_radial[sweep - 1].item())
 
 
 def pipeline_hfe(cfg, folder_id, grayscale_filename):
+    """
+    Executes the homogenized finite elements (HFE) pipeline for a given sample.
+
+    Args:
+        cfg: Configuration object containing all necessary settings.
+        folder_id (str): Identifier for the folder containing the sample data.
+        grayscale_filename (str): Filename of the grayscale image to be processed.
+
+    Returns:
+        tuple: A tuple containing the time record dictionary and the summary path.
+    """
 
     # timing
     time_record = {}

@@ -36,31 +36,43 @@ logger.propagate = False
 
 # flake8: noqa: E402, W503
 
+"""
+# TODO: reactivate this for mesh sensitivity analysis
+# n_sim = int(15)  # has to match sweep in config
+# min = 5, 5, 2, 7
+# max = 20, 50, 10, 50 did not work, reducing to 20, 40, 10, 40
+n_elms_longitudinal = np.linspace(1, 20, n_sim, dtype=int)
+n_elms_transverse_trab = np.linspace(3, 50, n_sim, dtype=int)
+n_elms_transverse_cort = np.linspace(1, 10, n_sim, dtype=int)
+n_radial = np.linspace(3, 50, n_sim, dtype=int)
+
+# update meshing settings with sweep factor for sensitivity analysis
+sweep = cfg.meshing_settings.sweep_factor
+cfg.meshing_settings.n_elms_longitudinal = int(
+    n_elms_longitudinal[sweep - 1].item()
+)
+cfg.meshing_settings.n_elms_transverse_trab = int(
+    n_elms_transverse_trab[sweep - 1].item()
+)
+cfg.meshing_settings.n_elms_transverse_cort = int(
+    n_elms_transverse_cort[sweep - 1].item()
+)
+cfg.meshing_settings.n_elms_radial = int(n_radial[sweep - 1].item())
+"""
+
 
 def pipeline_hfe(cfg, folder_id, grayscale_filename):
-    '''
-    # TODO: reactivate this for mesh sensitivity analysis
-    # n_sim = int(15)  # has to match sweep in config
-    # min = 5, 5, 2, 7
-    # max = 20, 50, 10, 50 did not work, reducing to 20, 40, 10, 40
-    n_elms_longitudinal = np.linspace(1, 20, n_sim, dtype=int)
-    n_elms_transverse_trab = np.linspace(3, 50, n_sim, dtype=int)
-    n_elms_transverse_cort = np.linspace(1, 10, n_sim, dtype=int)
-    n_radial = np.linspace(3, 50, n_sim, dtype=int)
+    """
+    Executes the homogenized finite elements (HFE) pipeline for a given sample.
 
-    # update meshing settings with sweep factor for sensitivity analysis
-    sweep = cfg.meshing_settings.sweep_factor
-    cfg.meshing_settings.n_elms_longitudinal = int(
-        n_elms_longitudinal[sweep - 1].item()
-    )
-    cfg.meshing_settings.n_elms_transverse_trab = int(
-        n_elms_transverse_trab[sweep - 1].item()
-    )
-    cfg.meshing_settings.n_elms_transverse_cort = int(
-        n_elms_transverse_cort[sweep - 1].item()
-    )
-    cfg.meshing_settings.n_elms_radial = int(n_radial[sweep - 1].item())
-    '''
+    Args:
+        cfg: Configuration object containing all necessary settings.
+        folder_id (str): Identifier for the folder containing the sample data.
+        grayscale_filename (str): Filename of the grayscale image to be processed.
+
+    Returns:
+        tuple: A tuple containing the time record dictionary and the summary path.
+    """
 
     # timing
     time_record = {}

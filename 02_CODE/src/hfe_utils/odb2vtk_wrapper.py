@@ -45,7 +45,7 @@ class Odb2VtkWrapper:
         )
 
         vtu_out_path = (
-            self.odb_path.parent / self.odb_path.stem / f"{stepname}_{frames[0]}.vtu"
+            self.odb_path.parent / self.odb_path.stem / f"{self.odb_path.stem}_{frames[0]}.vtu"
         )
         return vtu_out_path.resolve()
 

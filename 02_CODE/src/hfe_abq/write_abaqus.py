@@ -557,7 +557,8 @@ class AbaqusWriter:
             RF
             *NODE PRINT, NSET=REF_NODE, FREQUENCY=1, SUMMARY=NO
             U,
-            RF
+            RF,
+            CF,
             *End Step
         """
         return textwrap.dedent(out_hist)

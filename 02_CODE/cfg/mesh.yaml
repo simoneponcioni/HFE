@@ -12,7 +12,7 @@ meshing_settings:
   outside_val: 1                      # threshold value for the outside of the mask
   lower_thresh: 0                     # lower threshold for the mask
   upper_thresh: 0.9                   # upper threshold for the mask
-  s: 500                              # smoothing factor of the spline
+  s: 400                              # smoothing factor of the spline
   k: 3                                # degree of the spline
   interp_points: 200                  # number of points to interpolate the spline
   dp_simplification_outer: 3          # Ramer-Douglas-Peucker simplification factor for the periosteal contour
@@ -23,11 +23,12 @@ meshing_settings:
   center_square_length_factor: 0.4    # size ratio of the refinement square: 0 < l_f < 1
   mesh_order: 1                       # set order of the mesh (1: linear, 2: quadratic)
   sweep_factor: 1                     # factor for the sweep used in hydra for the sensitivity analysis
-  n_elms_longitudinal: 3
-  n_elms_transverse_trab: 15
-  n_elms_transverse_cort: 3
+  n_elms_longitudinal: 3              
+  n_elms_transverse_trab: 15          
+  n_elms_transverse_cort: 3           
   n_elms_radial: 20                   # ! Should be 10 if trab_refinement is True
   ellipsoid_fitting: True
+  
   show_plots: False                   # show plots during construction
   show_gmsh: False                    # show gmsh GUI
   write_mesh: True                    # write mesh to file

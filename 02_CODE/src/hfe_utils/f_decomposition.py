@@ -132,23 +132,23 @@ def add_data_to_vtu(
 
 
 def decomposition_to_vtu(input_filepath):
-    print(f"Reading {input_filepath} ...")
+    logger.info(f"Reading {input_filepath} ...")
     output_compression = read_vtu(input_filepath)
     centroid_arrays = get_centroid_arrays(output_compression)
-    print(f"Extracted {len(centroid_arrays)} arrays from the vtu file")
+    logger.info(f"Extracted {len(centroid_arrays)} arrays from the vtu file")
     F = get_F_matrix(centroid_arrays)
-    print(f"Extracted F matrix with shape {F.shape}")
+    logger.info(f"Extracted F matrix with shape {F.shape}")
     spherical_compression, isovolumic_deformation = decomposition(F)
 
     output_filepath = input_filepath.with_stem(input_filepath.stem + "_with_data")
-    print(f"Saving output to {output_filepath} ...")
+    logger.info(f"Saving output to {output_filepath} ...")
     add_data_to_vtu(
         output_compression,
         spherical_compression,
         isovolumic_deformation,
         output_filepath,
     )
-    print("Done!")
+    logger.info("Done!")
 
 
 def main():

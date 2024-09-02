@@ -37,7 +37,7 @@ ENV PATH="/opt/miniconda/bin:$PATH"
 RUN conda create -n hfe-essentials python=3.12
 SHELL ["conda", "run", "-n", "hfe-essentials", "/bin/bash", "-c"]
 # Copy hfe requirements.txt and install requirements
-COPY ./requirements.txt .
+COPY ../requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 RUN pip install -U scikit-image
 RUN pip install imutils

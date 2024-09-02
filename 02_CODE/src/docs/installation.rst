@@ -12,7 +12,7 @@ image, follow these steps:
    `here <https://www.docker.com/products/docker-desktop>`__.
 
 2. Navigate to the project directory that contains the Dockerfile. In
-   this case, it’s the ``02_CODE`` directory.
+   this case, it's the ``02_CODE`` directory.
 
 .. code:: sh
 

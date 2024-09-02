@@ -24,9 +24,9 @@ import hfe_utils.imutils as imutils
 import hfe_utils.print_optim_report as por
 import numpy as np
 import yaml
+from hfe_utils.f_decomposition import decomposition_to_vtu
 from hfe_utils.io_utils import print_mem_usage, write_timing_summary
 from hfe_utils.odb2vtk_wrapper import Odb2VtkWrapper
-from hfe_utils.f_decomposition import decomposition_to_vtu
 
 os.environ["NUMEXPR_MAX_THREADS"] = "16"
 
@@ -36,7 +36,7 @@ logger.propagate = False
 
 # flake8: noqa: E402, W503
 
-'''
+"""
 # TODO: reactivate this for mesh sensitivity analysis
 # n_sim = int(15)  # has to match sweep in config
 # min = 5, 5, 2, 7
@@ -58,9 +58,21 @@ cfg.meshing_settings.n_elms_transverse_cort = int(
     n_elms_transverse_cort[sweep - 1].item()
 )
 cfg.meshing_settings.n_elms_radial = int(n_radial[sweep - 1].item())
-'''
+"""
+
 
 def pipeline_hfe(cfg, folder_id, grayscale_filename):
+    """
+    Executes the homogenized finite elements (HFE) pipeline for a given sample.
+
+    Args:
+        cfg: Configuration object containing all necessary settings.
+        folder_id (str): Identifier for the folder containing the sample data.
+        grayscale_filename (str): Filename of the grayscale image to be processed.
+
+    Returns:
+        tuple: A tuple containing the time record dictionary and the summary path.
+    """
 
     # timing
     time_record = {}
@@ -120,10 +132,8 @@ def pipeline_hfe(cfg, folder_id, grayscale_filename):
         end_simulation = time()
     time_record["simulation"] = end_simulation - start_simulation
 
-    logger.info("Running postprocessing.datfilereader_psl")
     optim = {}
     optim = postprocessing.datfilereader_psl(cfg, grayscale_filename, optim, "FZ_MAX")
-    logger.info("Execution completed: postprocessing.datfilereader_psl")
 
     # timing
     end_sample = time()
@@ -133,18 +143,10 @@ def pipeline_hfe(cfg, folder_id, grayscale_filename):
     path2dat = Path(inputfile).parent / (
         grayscale_filename + "_" + cfg.version.current_version[0:2] + ".dat"
     )
-    
-    logger.info(f"path2dat: {path2dat}")
-    logger.info(f"absolute path2dat: {path2dat.absolute}")
-    
     thickness = max(val[2] for val in bone["nodes"].values()) - min(
         val[2] for val in bone["nodes"].values()
     )
-    logger.info(f"Thickness: {thickness}")
-    
-    logger.info("Running compute_optim_report_variables")
     optim = por.compute_optim_report_variables(optim, path2dat, thickness)
-    logger.info("Execution completed: compute_optim_report_variables")
     bone = por.compute_bone_report_variables_no_psl(bone)
 
     # only for sensitivity analysis
@@ -154,8 +156,6 @@ def pipeline_hfe(cfg, folder_id, grayscale_filename):
         "n_elms_transverse_cort": cfg.meshing_settings.n_elms_transverse_cort,
         "n_elms_radial": cfg.meshing_settings.n_elms_radial,
     }
-    
-    logger.info("Executing postprocessing.write_data_summary")
     postprocessing.write_data_summary(
         cfg,
         optim,
@@ -165,22 +165,16 @@ def pipeline_hfe(cfg, folder_id, grayscale_filename):
         DOFs=bone["degrees_of_freedom"],
         time_sim=time_record[grayscale_filename],
     )
-    logger.info("Executed: postprocessing.write_data_summary")
-    
+
     if cfg.strain_localisation.strain_analysis is True:
-        logger.info("Running strain analysis evaluation")
         odb2vtkpath = cfg.socket_paths.odb2vtk
         odb_path = odb_path
         abq_path = cfg.solver.abaqus
-        logger.info(f"odb2vtkpath: {odb2vtkpath}")
-        logger.info(f"odb_path: {odb_path}")
-        logger.info(f"abq_path: {abq_path}")
-        
         odb2vtk_wrapper = Odb2VtkWrapper(
             odb2vtkpath, odb_path, abq_path, only_last_frame=True
         )
         vtk_path = odb2vtk_wrapper.convert()
-        logger.info(f"ODB to VTK file written to {vtk_path}")
+        print(f"ODB to VTK file written to {vtk_path}")
         decomposition_to_vtu(vtk_path)
 
     if cfg.abaqus.delete_odb is True:

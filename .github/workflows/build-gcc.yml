@@ -26,7 +26,7 @@ jobs:
         name: Build and push
         uses: docker/build-push-action@v5
         with:
-            context: "{{defaultContext}}:02_CODE"
+            context: "{{defaultContext}}:02_CODE/docker_apptainer_hpc"
             file: Dockerfile.ubuntu24.04.gcc
             push: true
             tags: ${{ secrets.DOCKERHUB_USERNAME }}/hfe_development_gcc:latest

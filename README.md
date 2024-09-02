@@ -1,6 +1,20 @@
-# Homogenised Finite Elements (HFE)
+# Homogenised Finite Elements (HFE) pipeline
 
-## Building Dependencies
+👷🏼 Simone Poncioni <br> 🦴 Musculoskeletal Biomechanics Group<br> 🎓 ARTORG Center for Biomedical Engineering Research, University of Bern
+
+
+## 📝 Introduction
+
+We present a robust and efficient standalone meshing algorithm designed to create biphasic, structured, and fully hexahedral meshes from clinical imaging data. Traditional voxel-based meshing techniques often struggle to accurately represent the complex geometry of cortical bone, leading to suboptimal mechanical simulations. To address this, our method leverages a smooth representation that significantly enhances the precision of cortical shell modeling, outperforming isotropic voxel-based meshes. By generating structured meshes, our approach ensures greater efficiency, reduced memory usage, and improved comparability across different patients or longitudinal studies. The algorithm integrates advanced image processing techniques, including contour extraction, BSpline smoothing, and mesh optimization, to produce high-quality meshes that accurately capture both cortical and trabecular compartments. This meshing process sets the foundation for precise biomechanical simulations and advanced material homogenization techniques, offering a powerful tool for clinical and research applications in bone mechanics.
+
+## 💡 Method
+
+![Graphical Abstract](02_CODE/docs/smooth_mesh_graph_abstract_v1.jpg)
+
+
+## 🔧 Installation
+
+### Building Dependencies
 
 This project uses Docker to manage its dependencies. To build the Docker image, follow these steps:
 
@@ -18,7 +32,7 @@ cd 02_CODE
 docker build -t your_image_name -f Dockerfile.ubuntu24.04 .
 ```
 
-## Running the Docker Image
+### Running the Docker Image
 
 After building the Docker image, you can run it using the following command:
 
@@ -28,7 +42,7 @@ docker run -it your_image_name
 
 This will start a Docker container with the built image and open an interactive shell in the container. The Docker container has all the dependencies installed and the environment set up as specified in the Dockerfile.
 
-## Running the Project
+### Running the Project
 
 Once you're inside the Docker container, you can run the project. The exact command depends on how your project is structured, but it will generally look something like this:
 
@@ -40,7 +54,7 @@ cd 02_CODE
 python src/pipeline_runner.py
 ```
 
-## Building the Docker image in Apptainer
+### Building the Docker image in Apptainer
 
 When working on HPC, it might be necessary to run the container in Apptainer. You can pull the Docker image directly from Docker Hub:
 

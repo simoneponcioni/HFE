@@ -1,29 +1,23 @@
 name: docs_pages_workflow
- 
-# execute this workflow automatically when a we push to master
+
+# Execute this workflow automatically when we push to master
 on:
   push:
     branches: [ master ]
- 
+
 jobs:
- 
   build_docs_job:
     runs-on: ubuntu-latest
     container: debian:buster-slim
- 
+
     steps:
- 
-    - name: Prereqs
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Install dependencies
       run: |
         apt-get update
-        apt-get install -y git
-        git clone --depth 1 "https://token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" .
-      shell: bash
- 
+        apt-get install -y git rsync python3-sphinx python3-sphinx-rtd-theme
+
     - name: Execute script to build our documentation and update pages
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: "02_CODE/src/docs/buildDocs.sh"
-      shell: bash
+      run: bash 02_CODE/src/docs/buildDocs.sh

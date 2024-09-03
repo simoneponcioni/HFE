@@ -49,6 +49,12 @@ if [ -z "${GITHUB_ACTOR}" ]; then
   GITHUB_ACTOR="default-actor"
 fi
 
+# Check if GITHUB_REPOSITORY is set, otherwise exit with an error
+if [ -z "${GITHUB_REPOSITORY}" ]; then
+  echo "GITHUB_REPOSITORY is not set. Exiting."
+  exit 1
+fi
+
 git config --global user.name "${GITHUB_ACTOR}"
 git config --global user.email "${GITHUB_ACTOR}@users.noreply.github.com"
 

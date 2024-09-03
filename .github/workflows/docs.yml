@@ -12,7 +12,7 @@ jobs:
 
     env:
       GITHUB_ACTOR: ${{ github.actor }}
-      GITHUB_TOKEN: ${{ secrets.TOKEN_ADMIN }}
+      GITHUB_TOKEN: ${{ secrets.TOKEN_WORKFLOW }}
       GITHUB_REPOSITORY: ${{ github.repository }}
 
     steps:
@@ -37,7 +37,7 @@ jobs:
     - name: Execute script to build our documentation and update pages
       env:
         GITHUB_ACTOR: ${{ github.actor }}
-        GITHUB_TOKEN: ${{ secrets.TOKEN_ADMIN }}
+        GITHUB_TOKEN: ${{ secrets.TOKEN_WORKFLOW }}
         GITHUB_REPOSITORY: ${{ github.repository }}
       run: sudo -E bash 02_CODE/src/docs/buildDocs.sh
 

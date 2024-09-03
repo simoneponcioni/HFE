@@ -44,6 +44,11 @@ make -C 02_CODE/src/docs html
 # Update GitHub Pages #
 #######################
 
+# Check if GITHUB_ACTOR is set, otherwise use a default value
+if [ -z "${GITHUB_ACTOR}" ]; then
+  GITHUB_ACTOR="default-actor"
+fi
+
 git config --global user.name "${GITHUB_ACTOR}"
 git config --global user.email "${GITHUB_ACTOR}@users.noreply.github.com"
 

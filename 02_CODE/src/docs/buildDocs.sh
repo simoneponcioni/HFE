@@ -46,7 +46,7 @@ make -C 02_CODE/src/docs html
 
 # Check if GITHUB_ACTOR is set, otherwise use a default value
 if [ -z "${GITHUB_ACTOR}" ]; then
-  GITHUB_ACTOR="simoneponcioni"
+  GITHUB_ACTOR="default-actor"
 fi
 
 git config --global user.name "${GITHUB_ACTOR}"
@@ -59,7 +59,7 @@ pushd "${docroot}"
 
 # don't bother maintaining history; just generate fresh
 git init
-git remote add deploy "https://token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+git remote add deploy "https://${GITHUB_ACTOR}:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
 git checkout -b gh-pages
 
 # add .nojekyll to the root so that github won't 404 on content added to dirs

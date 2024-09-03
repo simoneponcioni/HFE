@@ -1,0 +1,35 @@
+name: Docs pages workflow
+
+# Execute this workflow automatically when we push to master
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+  build_docs_job:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y git rsync python3-sphinx python3-sphinx-rtd-theme
+
+    - name: Execute script to build our documentation and update pages
+      run: bash 02_CODE/src/docs/buildDocs.sh
+
+    - name: Verify documentation build
+      run: |
+        if [ ! -d "docs/_build/html" ]; then
+          echo "Documentation build failed"
+          exit 1
+        fi
+        echo "Documentation build succeeded"

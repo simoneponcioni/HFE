@@ -11,6 +11,10 @@ jobs:
   build_docs_job:
     runs-on: ubuntu-latest
 
+    env:
+      GITHUB_ACTOR: ${{ github.actor }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
     steps:
     - name: Checkout repository
       uses: actions/checkout@v2

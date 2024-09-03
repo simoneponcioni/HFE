@@ -9,7 +9,7 @@
 
 ## 📝 Introduction
 
-We present a robust and efficient standalone homogenised finite element pipeline from HR-pQCT clinical imaging data. Traditional voxel-based meshing techniques often struggle to accurately represent the complex geometry of cortical bone, leading to suboptimal mechanical simulations. To address this, our method leverages a smooth representation that significantly enhances the precision of cortical shell modeling, outperforming monophasic isotropic voxel-based meshes. By generating structured meshes, our approach ensures greater efficiency, reduced memory usage, and improved comparability across different patients or longitudinal studies. The algorithm integrates advanced image processing techniques, including contour extraction, BSpline smoothing, and mesh optimization, to produce high-quality meshes that accurately capture both cortical and trabecular compartments.
+<p style='text-align: justify;'> We present a robust and efficient standalone homogenised finite element pipeline from HR-pQCT clinical imaging data. Traditional voxel-based meshing techniques often struggle to accurately represent the complex geometry of cortical bone, leading to suboptimal mechanical simulations. To address this, our method leverages a smooth representation that significantly enhances the precision of cortical shell modeling, outperforming monophasic isotropic voxel-based meshes. By generating structured meshes, our approach ensures greater efficiency, reduced memory usage, and improved comparability across different patients or longitudinal studies. The algorithm integrates advanced image processing techniques, including contour extraction, BSpline smoothing, and mesh optimization, to produce high-quality meshes that accurately capture both cortical and trabecular compartments. </p>
 
 ## 💡 Method
 
@@ -18,7 +18,19 @@ We present a robust and efficient standalone homogenised finite element pipeline
 
 ## 🔧 Installation
 
-### Building Dependencies
+This project uses Conda to manage its Python dependencies. To create a Conda environment with the required dependencies, follow these steps:
+
+1. **Install Conda**: If you haven't already, download and install Conda from the [official website](https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html).
+
+2. **Create a Conda Environment**: Run the following command to create a new Conda environment.
+
+```sh
+conda create --name hfe-essentials python=3.12
+conda activate hfe-essentials
+pip install -r requirements.txt
+```
+
+### Building Dependencies with Docker (including FORTRAN compiler)
 
 This project uses Docker to manage its dependencies. To build the Docker image, follow these steps:
 

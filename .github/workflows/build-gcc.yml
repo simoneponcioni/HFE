@@ -32,6 +32,5 @@ jobs:
             tags: ${{ secrets.DOCKERHUB_USERNAME }}/hfe_development_gcc:latest
             build-args: |
                 GITHUB_USERNAME=${{ secrets.USERNAME_ADMIN }}
-                GITHUB_TOKEN=${{ secrets.TOKEN_ADMIN }}
                 USER_UID=1000
                 USER_GID=1000

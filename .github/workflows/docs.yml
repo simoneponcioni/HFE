@@ -1,6 +1,5 @@
 name: Docs pages workflow
 
-# Execute this workflow automatically when we push to main or master
 on:
   push:
     branches:
@@ -13,6 +12,7 @@ jobs:
 
     env:
       GITHUB_ACTOR: ${{ github.actor }}
+      GITHUB_REPOSITORY: ${{ github.repository }}
 
     steps:
     - name: Checkout repository

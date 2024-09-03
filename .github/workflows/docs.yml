@@ -1,50 +1,27 @@
-name: Docs pages workflow
+name: documentation
 
-on:
-  push:
-    branches:
-      - main
-      - master
+on: [push, pull_request, workflow_dispatch]
+
+permissions:
+  contents: write
 
 jobs:
-  build_docs_job:
+  docs:
     runs-on: ubuntu-latest
-
-    env:
-      GITHUB_ACTOR: ${{ github.actor }}
-      GITHUB_TOKEN: ${{ secrets.TOKEN_WORKFLOW }}
-      GITHUB_REPOSITORY: ${{ github.repository }}
-
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
-
-    - name: Set up Python
-      uses: actions/setup-python@v2
-      with:
-        python-version: '3.x'
-
-    - name: Install dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y git rsync python3-sphinx python3-sphinx-rtd-theme
-
-    - name: Print actor and repository
-      run: |
-        echo "GITHUB_ACTOR: $GITHUB_ACTOR"
-        echo "GITHUB_REPOSITORY: $GITHUB_REPOSITORY"
-
-    - name: Execute script to build our documentation and update pages
-      env:
-        GITHUB_ACTOR: ${{ github.actor }}
-        GITHUB_TOKEN: ${{ secrets.TOKEN_WORKFLOW }}
-        GITHUB_REPOSITORY: ${{ github.repository }}
-      run: sudo -E bash 02_CODE/src/docs/buildDocs.sh
-
-    - name: Verify documentation build
-      run: |
-        if [ ! -d "02_CODE/src/docs/_build/html" ]; then
-          echo "Documentation build failed"
-          exit 1
-        fi
-        echo "Documentation build succeeded"
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+      - name: Install dependencies
+        run: |
+          pip install sphinx sphinx_rtd_theme myst_parser
+      - name: Sphinx build
+        run: |
+          sphinx-build doc _build
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+        with:
+          publish_branch: gh-pages
+          github_token: ${{ secrets.TOKEN_WORKFLOW }}
+          publish_dir: _build/
+          force_orphan: true

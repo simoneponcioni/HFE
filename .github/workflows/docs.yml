@@ -3,7 +3,9 @@ name: Docs pages workflow
 # Execute this workflow automatically when we push to master
 on:
   push:
-    branches: [ master ]
+    branches:
+      - main
+      - master
 
 jobs:
   build_docs_job:

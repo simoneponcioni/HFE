@@ -1,6 +1,6 @@
 name: Docs pages workflow
 
-# Execute this workflow automatically when we push to master
+# Execute this workflow automatically when we push to main or master
 on:
   push:
     branches:
@@ -26,7 +26,7 @@ jobs:
         sudo apt-get install -y git rsync python3-sphinx python3-sphinx-rtd-theme
 
     - name: Execute script to build our documentation and update pages
-      run: bash 02_CODE/src/docs/buildDocs.sh
+      run: sudo bash 02_CODE/src/docs/buildDocs.sh
 
     - name: Verify documentation build
       run: |

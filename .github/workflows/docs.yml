@@ -12,6 +12,7 @@ jobs:
 
     env:
       GITHUB_ACTOR: ${{ github.actor }}
+      GITHUB_TOKEN: ${{ secrets.TOKEN_ADMIN }}
       GITHUB_REPOSITORY: ${{ github.repository }}
 
     steps:

@@ -46,7 +46,7 @@ make -C 02_CODE/src/docs html
 
 # Check if GITHUB_ACTOR is set, otherwise use a default value
 if [ -z "${GITHUB_ACTOR}" ]; then
-  GITHUB_ACTOR="default-actor"
+  GITHUB_ACTOR="simoneponcioni"
 fi
 
 git config --global user.name "${GITHUB_ACTOR}"

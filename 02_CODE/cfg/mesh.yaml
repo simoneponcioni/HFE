@@ -12,7 +12,7 @@ meshing_settings:
   outside_val: 1                      # threshold value for the outside of the mask
   lower_thresh: 0                     # lower threshold for the mask
   upper_thresh: 0.9                   # upper threshold for the mask
-  s: 400                              # smoothing factor of the spline
+  s: 300                              # smoothing factor of the spline
   k: 3                                # degree of the spline
   interp_points: 200                  # number of points to interpolate the spline
   dp_simplification_outer: 3          # Ramer-Douglas-Peucker simplification factor for the periosteal contour
